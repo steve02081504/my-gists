@@ -9,3 +9,7 @@ inline std::basic_string<char_t>&replace_all(std::basic_string<char_t>&a,const s
 	}
 	return a;
 };
+template<class char_t,class T1,class T2>
+inline std::basic_string<char_t>& replace_all(std::basic_string<char_t>& a,T1&&b,T2&&c) {
+		return replace_all(a, std::basic_string_view<char_t>(b), std::basic_string_view<char_t>(c));
+};
