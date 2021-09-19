@@ -12,6 +12,7 @@ class Cshiori {
 	typedef HGLOBAL __cdecl request_type_t(HGLOBAL h, long* len);
 	typedef request_type_t* request_type;
 
+	std::wstring filename;
 	load_type load=NULL;
 	bool loadok=1;
 	unload_type unload=NULL;
@@ -26,4 +27,6 @@ public:
 	void SetTo(LPCWSTR pszFileName);
 	Cshiori(LPCWSTR pszFileName);
 	~Cshiori();
+	void Doreload();
+	void Dounload();
 };

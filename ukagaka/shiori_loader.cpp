@@ -25,19 +25,29 @@ void Cshiori::call_unload(){
 Cshiori::Cshiori(){}
 void Cshiori::SetTo(LPCWSTR pszFileName){
 	if(dll)
-		this->~Cshiori();
+		Dounload();
+	filename=pszFileName;
 	dll=LoadLibrary(pszFileName);
 	init_methods();
 	if(All_OK())
 		call_load(pszFileName);
 	else
-		this->~Cshiori();
+		Dounload();
 }
 Cshiori::Cshiori(LPCWSTR pszFileName){
 	SetTo(pszFileName);
 }
 Cshiori::~Cshiori(){
+	Dounload();
+}
+void Cshiori::Doreload(){
+	this->~Cshiori();
+	SetTo(filename.c_str());
+}
+void Cshiori::Dounload(){
 	call_unload();
-	FreeLibrary(dll);
+	unload=NULL;
+	if(dll)
+		FreeLibrary(dll);
 	dll=NULL;
 }
