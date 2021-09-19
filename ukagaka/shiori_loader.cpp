@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include "string2HGLOBAL.hpp"
+#include "string2HGLOBAL.cpp"
 #include "shiori_loader.hpp"
 #include "../file/GetFilename_sPath.hpp"
 
