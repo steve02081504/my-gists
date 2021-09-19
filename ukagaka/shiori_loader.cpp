@@ -16,7 +16,7 @@ void Cshiori::call_load(LPCWSTR pszFileName){
 	auto a=string2HGLOBAL(GetFilename_sPath(pszFileName));
 	loadok=load(a.p,a.size);
 	if(!loadok)
-		this->~Cshiori();
+		Dounload();
 }
 void Cshiori::call_unload(){
 	if(unload&&loadok)
@@ -41,7 +41,7 @@ Cshiori::~Cshiori(){
 	Dounload();
 }
 void Cshiori::Doreload(){
-	this->~Cshiori();
+	Dounload();
 	SetTo(filename.c_str());
 }
 void Cshiori::Dounload(){
