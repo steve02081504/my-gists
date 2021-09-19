@@ -1,5 +1,9 @@
-struct Cshiori{
-	HINSTANCE dll=NULL;
+#pragma once
+#include <Windows.h>
+#include "string2HGLOBAL.hpp"
+#include "../file/GetFilename_sPath.hpp"
+class Cshiori {
+	HINSTANCE dll = NULL;
 
 	typedef BOOL __cdecl load_type_t(HGLOBAL h, long len);
 	typedef load_type_t* load_type;
@@ -13,11 +17,13 @@ struct Cshiori{
 	unload_type unload=NULL;
 	request_type request=NULL;
 
+	void init_methods();
+	void call_load(LPCWSTR pszFileName);
+	void call_unload();
+public:
 	bool All_OK();
-
 	Cshiori();
 	void SetTo(LPCWSTR pszFileName);
 	Cshiori(LPCWSTR pszFileName);
 	~Cshiori();
-	
 };
