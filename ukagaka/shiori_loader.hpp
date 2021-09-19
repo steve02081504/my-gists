@@ -9,23 +9,15 @@ struct Cshiori{
 	typedef request_type_t* request_type;
 
 	load_type load=NULL;
+	bool loadok=1;
 	unload_type unload=NULL;
 	request_type request=NULL;
 
-	void init_methods(){
-		load=(load_type)GetProcAddress(dll,"load");
-		unload=(unload_type)GetProcAddress(dll,"unload");
-		request=(request_type)GetProcAddress(dll,"request");
-	}
-	Cshiori(){}
-	void SetTo(LPCWSTR pszFileName){
-		dll=LoadLibrary(pszFileName);
-		init_methods();
-	}
-	Cshiori(LPCWSTR pszFileName){
-		SetTo(pszFileName);
-	}
-	~Cshiori(){
-		FreeLibrary(dll);
-	}
+	bool All_OK();
+
+	Cshiori();
+	void SetTo(LPCWSTR pszFileName);
+	Cshiori(LPCWSTR pszFileName);
+	~Cshiori();
+	
 };
