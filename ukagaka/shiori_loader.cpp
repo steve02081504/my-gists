@@ -12,6 +12,7 @@ void Cshiori::init_methods(){
 	request=(request_type)GetProcAddress(dll,"request");
 }
 void Cshiori::call_load(LPCWSTR pszFileName){
+	loadok=1;
 	auto a=string2HGLOBAL(GetFilename_sPath(pszFileName));
 	loadok=load(a.p,a.size);
 	if(!loadok)
@@ -23,6 +24,8 @@ void Cshiori::call_unload(){
 }
 Cshiori::Cshiori(){}
 void Cshiori::SetTo(LPCWSTR pszFileName){
+	if(dll)
+		this->~Cshiori();
 	dll=LoadLibrary(pszFileName);
 	init_methods();
 	if(All_OK())
@@ -36,4 +39,5 @@ Cshiori::Cshiori(LPCWSTR pszFileName){
 Cshiori::~Cshiori(){
 	call_unload();
 	FreeLibrary(dll);
+	dll=NULL;
 }
