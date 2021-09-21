@@ -1,5 +1,6 @@
 //copy from https://github.com/ponapalt/csaori
 //
+#pragma once
 #include <vector>
 #include <string>
 #include <Windows.h>

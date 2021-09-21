@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "string2HGLOBAL.hpp"
 #include "../file/GetFilename_sPath.hpp"
+#include "../codepage.hpp"
 class Cshiori {
 	HINSTANCE dll = NULL;
 
@@ -17,6 +18,7 @@ class Cshiori {
 	bool loadok=1;
 	unload_type unload=NULL;
 	request_type request=NULL;
+	CODEPAGE_n::CODEPAGE cp=CODEPAGE_n::CP_UTF8;
 
 	void init_methods();
 	void call_load(LPCWSTR pszFileName);
@@ -29,4 +31,8 @@ public:
 	~Cshiori();
 	void Doreload();
 	void Dounload();
+	void SetCodePage(std::wstring);
+	void SetCodePage(CODEPAGE_n::CODEPAGE);
+	std::string operator()(std::string);
+	std::wstring operator()(std::wstring);
 };

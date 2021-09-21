@@ -3,6 +3,7 @@
 #include "string2HGLOBAL.cpp"
 #include "shiori_loader.hpp"
 #include "../file/GetFilename_sPath.hpp"
+#include "../codepage.cpp"
 
 bool Cshiori::All_OK(){return dll&&load&&unload&&loadok&&request;}
 
@@ -50,4 +51,28 @@ void Cshiori::Dounload(){
 	if(dll)
 		FreeLibrary(dll);
 	dll=NULL;
+}
+using namespace CODEPAGE_n;
+void Cshiori::SetCodePage(std::wstring a){
+	SetCodePage((CODEPAGE_n::CODEPAGE)StringtoCodePage(a.c_str()));
+}
+
+void Cshiori::SetCodePage(CODEPAGE_n::CODEPAGE a){
+	cp=a;
+}
+
+std::string Cshiori::operator()(std::string a)
+{
+	if (request){
+		auto b=string2HGLOBAL(a);
+		long c = b.size;
+		auto d=request(b.p,&c);
+		return HGLOBAL2string({d,(size_t)c});
+	}
+	else
+		return std::string();
+}
+
+std::wstring Cshiori::operator()(std::wstring a){
+	return MultiByteToUnicode(operator()(UnicodeToMultiByte(a,cp)),cp);
 }
