@@ -10,6 +10,8 @@ HGLOBAL_t string2HGLOBAL(const std::string_view a){
 	HGLOBAL p=GlobalAlloc(GMEM_FIXED,s);
 	if(p)
 		std::memcpy((void*)p,a.data(),s);
+	else
+		s=0;
 	return{p,s};
 };
 HGLOBAL_t string2HGLOBAL(const std::wstring_view a,unsigned int CodePage){
