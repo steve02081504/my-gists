@@ -1,5 +1,7 @@
-﻿#include <stdio>
+﻿#include <cstdio>
 #include <string>
+#include "../file/fgetstring.h"
+#include "../file/ChangeSuffix.h"
 
 #undef max//fucking windows
 
@@ -150,12 +152,12 @@ struct Runcoder_t{
 		else{
 			string t;
 			while(fgetstring(t,from)){
-				fputs(do_coder_t::docryptLine(t),to);
+				fputs(do_coder_t::docryptLine(t).c_str(),to);
 			}
 		}
 	}
 	template<class do_coder_t>
-	static bool RuncodeFor(string_t file,string_t to_file){
+	static bool RuncodeFor(std::wstring file,std::wstring to_file){
 		if(file == to_file)
 			to_file += L".new";
 		auto fp=_wfopen(file.c_str(),Coder_t::coder_mode==char_mode?L"rb":L"r");
@@ -170,10 +172,10 @@ struct Runcoder_t{
 		fclose(fp2);
 		return 1;
 	}
-	static bool EncodeDic(string_t file){
-		return RuncodeFor<Coder_t::encoder_t>(file,ChangeSuffix(file,Coder_t::codedFileSuffix));
+	static bool EncodeDic(std::wstring file){
+		return RuncodeFor<Coder_t::encoder_t>(file,ChangeSuffix(file,(std::wstring_view)Coder_t::codedFileSuffix));
 	}
-	static bool DecodeDic(string_t file){
-		return RuncodeFor<Coder_t::decoder_t>(file,ChangeSuffix(file,Coder_t::NoncodedFileSuffix));
+	static bool DecodeDic(std::wstring file){
+		return RuncodeFor<Coder_t::decoder_t>(file,ChangeSuffix(file,(std::wstring_view)Coder_t::NoncodedFileSuffix));
 	}
 };
