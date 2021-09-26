@@ -116,7 +116,7 @@ struct Satoriya_Coder_t{//里々
 			auto len=s.size();
 			string aret;
 			for(size_t n=0;n<len;n+=2)aret+=p[n];
-			for(long long n=len-((len&1)?2:1);n>=0;n-=2)aret+=p[n];
+			for(long long n= long long(len)-(len&1)?2:1;n>=0;n-=2)aret+=p[n];
 			return	aret;
 		}
 	};
