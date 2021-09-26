@@ -2,6 +2,7 @@
 #include <string>
 #include "../file/fgetstring.h"
 #include "../file/ChangeSuffix.h"
+#include "../file/fputs.h"
 
 #undef max//fucking windows
 
@@ -152,7 +153,8 @@ struct Runcoder_t{
 		else{
 			string t;
 			while(fgetstring(t,from)){
-				fputs(do_coder_t::docryptLine(t).c_str(),to);
+				fputs(do_coder_t::docryptLine(t),to);
+				fputc('\n',to);
 			}
 		}
 	}

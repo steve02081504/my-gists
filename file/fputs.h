@@ -1,6 +1,4 @@
-inline void fputs(const string& str,FILE*to){
-	string aret;
+inline void fputs(const std::string& str,FILE*to){
 	for(auto c:str)
 		fputc(c,to);
-	fputc('\n',to);
 }

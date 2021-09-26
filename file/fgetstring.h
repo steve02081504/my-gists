@@ -2,14 +2,24 @@ template<class char_t>
 inline bool fgetstring(std::basic_string<char_t>&aret,FILE*from){
 	int c;
 	aret="";
-	while((c=fgetc(from))!=EOF && c!='\n')
-		if(c=='\r'){
+	bool success=0;
+	while(1){
+		c=fgetc(from);
+		switch(c){
+		case '\r':
 			c=fgetc(from);
 			if(!(c==EOF||c=='\n'))
 				ungetc(c,from);
+		case '\n':
+			success=1;
+		case EOF:
+			goto tret;
+		default:
+			success=1;
+			aret+=char_t(c);
 			break;
 		}
-		else
-			aret+=char_t(c);
-	return !(c==EOF&&aret.empty());
+	}
+tret:
+	return success;
 }
