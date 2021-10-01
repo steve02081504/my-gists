@@ -10,8 +10,10 @@ inline bool fgetstring(std::basic_string<char_t>&aret,FILE*from){
 			c=fgetc(from);
 			if(!(c==EOF||c=='\n'))
 				ungetc(c,from);
+			[[fallthrough]];
 		case '\n':
 			success=1;
+			[[fallthrough]];
 		case EOF:
 			goto tret;
 		default:

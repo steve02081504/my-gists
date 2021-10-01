@@ -102,22 +102,20 @@ struct Satoriya_Coder_t{//里々
 	//using std::string;
 	struct base{
 		static string encode(const string& s){
-			const char*	p=s.c_str();
 			auto len=s.size();
 			string aret;
 			for(size_t n=0;n<len/2;++n){
-				aret+=p[n];
-				aret+=p[len-n-1];
+				aret+=s[n];
+				aret+=s[len-n-1];
 			}
-			if(len&1)aret+=p[len/2];
+			if(len&1)aret+=s[len/2];
 			return aret;
 		}
 		static string decode(const string& s){
-			const char*	p=s.c_str();
 			auto len=s.size();
 			string aret;
-			for(size_t n=0;n<len;n+=2)aret+=p[n];
-			for(long long n= long long(len)-(len&1)?2:1;n>=0;n-=2)aret+=p[n];
+			for(size_t n=0;n<len;n+=2)aret+=s[n];
+			for(long long n=long long(len)-((len&1)?2:1);n>=0;n-=2)aret+=s[n];
 			return aret;
 		}
 	};
@@ -162,7 +160,7 @@ struct Runcoder_t{
 	static bool RuncodeFor(std::wstring file,std::wstring to_file){
 		if(file == to_file)
 			to_file += L".new";
-		auto fp=_wfopen(file.c_str(),Coder_t::coder_mode==char_mode?L"rb":L"r");
+		auto fp=_wfopen(file.c_str(),L"rb");
 		if(!fp)return 0;
 		auto fp2=_wfopen(to_file.c_str(),L"wb");
 		if(!fp2){
