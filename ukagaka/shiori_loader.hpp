@@ -21,7 +21,6 @@ class Cshiori {
 	bool loadok=1;
 	unload_type unload=NULL;
 	request_type request=NULL;
-	
 	CI_check_type checker;
 	CODEPAGE_n::CODEPAGE cp=CODEPAGE_n::CP_UTF8;
 
