@@ -11,6 +11,7 @@ void Cshiori::init_methods(){
 	load=(load_type)GetProcAddress(dll,"load");
 	unload=(unload_type)GetProcAddress(dll,"unload");
 	request=(request_type)GetProcAddress(dll,"request");
+	checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
 }
 void Cshiori::call_load(LPCWSTR pszFileName){
 	loadok=1;
@@ -77,9 +78,10 @@ std::wstring Cshiori::operator()(std::wstring a){
 	return MultiByteToUnicode(operator()(UnicodeToMultiByte(a,cp)),cp);
 }
 
-bool Cshiori::yaya_CI_check_failed(){
-	typedef BOOL __cdecl CI_check_t(void);
-	typedef CI_check_t* CI_check_type;
-	auto checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
+bool Cshiori::CI_check_failed(){
 	return (!checker)||checker();
+}
+
+bool Cshiori::can_make_CI_check(){
+	return checker;
 }
