@@ -25,6 +25,7 @@ class Cshiori {
 	unload_type unload=NULL;
 	request_type request=NULL;
 	CI_check_type checker=NULL;
+	void (*loghandler)(const wchar_t *str, int mode)=NULL;
 	CODEPAGE_n::CODEPAGE cp=CODEPAGE_n::CP_UTF8;
 
 	void init_methods();

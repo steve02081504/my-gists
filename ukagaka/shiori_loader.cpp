@@ -31,8 +31,11 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 	filename=pszFileName;
 	dll=LoadLibrary(pszFileName);
 	init_methods();
-	if(All_OK())
+	if(All_OK()){
+		if(loghandler)
+			Set_loghandler(loghandler);
 		call_load(pszFileName);
+	}
 	else
 		Dounload();
 }
@@ -86,7 +89,8 @@ bool Cshiori::can_make_CI_check(){
 	return checker;
 }
 
-void Cshiori::Set_loghandler(void (*loghandler)(const wchar_t *str, int mode)){
+void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode)){
+	loghandler=loghandler_v;
 	auto Setter=(Set_loghandler_type)GetProcAddress(dll,"Set_loghandler");
 	if(Setter)
 		Setter(loghandler);
