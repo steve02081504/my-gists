@@ -1,6 +1,6 @@
 #pragma once
-#include <Windows.h>
 #include <string_view>
+#include <Windows.h>
 
 struct HGLOBAL_t{
 	HGLOBAL p;

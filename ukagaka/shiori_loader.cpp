@@ -76,3 +76,10 @@ std::string Cshiori::operator()(std::string a)
 std::wstring Cshiori::operator()(std::wstring a){
 	return MultiByteToUnicode(operator()(UnicodeToMultiByte(a,cp)),cp);
 }
+
+bool Cshiori::yaya_CI_check_failed(){
+	typedef BOOL __cdecl CI_check_t(void);
+	typedef CI_check_t* CI_check_type;
+	auto checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
+	return (checker)&&checker();
+}

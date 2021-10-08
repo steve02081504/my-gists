@@ -35,4 +35,5 @@ public:
 	void SetCodePage(CODEPAGE_n::CODEPAGE);
 	std::string operator()(std::string);
 	std::wstring operator()(std::wstring);
+	bool yaya_CI_check_failed();
 };
