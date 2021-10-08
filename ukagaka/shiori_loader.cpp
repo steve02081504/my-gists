@@ -81,5 +81,5 @@ bool Cshiori::yaya_CI_check_failed(){
 	typedef BOOL __cdecl CI_check_t(void);
 	typedef CI_check_t* CI_check_type;
 	auto checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
-	return (checker)&&checker();
+	return (!checker)||checker();
 }
