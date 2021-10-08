@@ -13,15 +13,18 @@ class Cshiori {
 	typedef HGLOBAL __cdecl request_type_t(HGLOBAL h, long* len);
 	typedef request_type_t* request_type;
 
+	//for yaya's CI
 	typedef BOOL __cdecl CI_check_t(void);
 	typedef CI_check_t* CI_check_type;
+	typedef void __cdecl Set_loghandler_t(void (*loghandler)(const wchar_t *str, int mode));
+	typedef Set_loghandler_t* Set_loghandler_type;
 
 	std::wstring filename;
 	load_type load=NULL;
 	bool loadok=1;
 	unload_type unload=NULL;
 	request_type request=NULL;
-	CI_check_type checker;
+	CI_check_type checker=NULL;
 	CODEPAGE_n::CODEPAGE cp=CODEPAGE_n::CP_UTF8;
 
 	void init_methods();
@@ -41,4 +44,5 @@ public:
 	std::wstring operator()(std::wstring);
 	bool CI_check_failed();
 	bool can_make_CI_check();
+	void Set_loghandler(void (*loghandler)(const wchar_t *str, int mode));
 };
