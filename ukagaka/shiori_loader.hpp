@@ -16,7 +16,7 @@ class Cshiori {
 	//for yaya's CI
 	typedef BOOL __cdecl CI_check_t(void);
 	typedef CI_check_t* CI_check_type;
-	typedef void __cdecl Set_loghandler_t(void (*loghandler)(const wchar_t *str, int mode));
+	typedef void __cdecl Set_loghandler_t(void (*loghandler)(const wchar_t *str, int mode, int id));
 	typedef Set_loghandler_t* Set_loghandler_type;
 
 	std::wstring filename;
@@ -45,5 +45,5 @@ public:
 	std::wstring operator()(std::wstring);
 	bool CI_check_failed();
 	bool can_make_CI_check();
-	void Set_loghandler(void (*loghandler)(const wchar_t *str, int mode));
+	void Set_loghandler(void (*loghandler)(const wchar_t *str, int mode, int id));
 };

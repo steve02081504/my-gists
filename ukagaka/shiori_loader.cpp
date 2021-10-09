@@ -89,7 +89,7 @@ bool Cshiori::can_make_CI_check(){
 	return checker;
 }
 
-void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode)){
+void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode, int id)){
 	loghandler=loghandler_v;
 	auto Setter=(Set_loghandler_type)GetProcAddress(dll,"Set_loghandler");
 	if(Setter)
