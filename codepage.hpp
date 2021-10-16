@@ -82,7 +82,7 @@ namespace CODEPAGE_n{
 		return L"unknown charset";
 	}
 
-	inline UINT StringtoCodePage(const char *str)
+	inline CODEPAGE StringtoCodePage(const char *str)
 	{
 		if ( str && *str ) {
 			if ( _strnicmp(str,"shift_jis",9) == 0 ) {
@@ -107,7 +107,7 @@ namespace CODEPAGE_n{
 		return CP_SJIS;
 	}
 
-	inline UINT StringtoCodePage(const wchar_t *str)
+	inline CODEPAGE StringtoCodePage(const wchar_t *str)
 	{
 		if ( str && *str ) {
 			if ( _wcsnicmp(str,L"shift_jis",9) == 0 ) {
