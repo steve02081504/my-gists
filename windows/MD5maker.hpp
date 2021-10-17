@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <Windows.h>
-class MD5maker
+class MD5maker_t
 {
 	struct MD5_CTX
 	{
@@ -16,7 +16,7 @@ class MD5maker
 	typedef void (WINAPI *MD5_UPDATE)(MD5_CTX*,const void*,unsigned int);
 	const char* MODULE_NAME = "Cryptdll.dll";
 public:
-	MD5maker() 
+	MD5maker_t() 
 		:mInit(nullptr)
 		,mFinal(nullptr)
 		,mUpdate(nullptr)
@@ -37,7 +37,7 @@ public:
 			throw std::runtime_error("Get Function Address fail");
 		}
 	}
-	~MD5maker()
+	~MD5maker_t()
 	{
 		if (mModule)
 		{
@@ -102,5 +102,5 @@ private:
 	MD5_INIT mFinal;
 	MD5_UPDATE mUpdate;
 	HMODULE mModule;
-
 };
+inline MD5maker_t MD5maker;
