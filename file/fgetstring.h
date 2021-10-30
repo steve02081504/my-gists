@@ -1,7 +1,7 @@
 template<class char_t>
 inline bool fgetstring(std::basic_string<char_t>&aret,FILE*from){
 	int c;
-	aret="";
+	aret.clear();
 	bool success=0;
 	while(1){
 		c=fgetc(from);

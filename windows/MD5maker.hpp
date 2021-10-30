@@ -93,7 +93,7 @@ private:
 		char szBuffer[33] = { 0 };
 		for (size_t i = 0; i < 16; i++)
 		{
-			sprintf_s(szBuffer + i * 2, 2,"%02x", ctx->digest[i]);
+			sprintf(szBuffer + i * 2,"%02x", ctx->digest[i]);
 		}
 		return std::string().assign(szBuffer);
 	}
