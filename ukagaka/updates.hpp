@@ -57,9 +57,12 @@ namespace updatefile_n{
 			matcher.clear();
 			wstring str;
 			auto fp=_wfopen(file_path.c_str(), L"r");
-			while(fgetstring(str,fp)){
-				if(str.size())
-					matcher.AddRule(str);
+			if(fp){
+				while(fgetstring(str,fp)){
+					if(str.size())
+						matcher.AddRule(str);
+				}
+				fclose(fp);
 			}
 			matcher.reverse();//match->ignore
 		}
@@ -69,19 +72,22 @@ namespace updatefile_n{
 			wstring str;
 			string nstr;
 			auto fp=_wfopen(file_path.c_str(), L"r");
-			while(fgetstring(nstr,fp)){
-				str=CODEPAGE_n::MultiByteToUnicode(nstr,charset);
-				auto key = str.substr(0,str.find(L","));
-				str= str.substr(str.find(L",")+1);
-				if (key == L"charset") {
-					charset = CODEPAGE_n::StringtoCodePage(str.c_str());
+			if(fp){
+				while(fgetstring(nstr,fp)){
+					str=CODEPAGE_n::MultiByteToUnicode(nstr,charset);
+					auto key = str.substr(0,str.find(L","));
+					str= str.substr(str.find(L",")+1);
+					if (key == L"charset") {
+						charset = CODEPAGE_n::StringtoCodePage(str.c_str());
+					}
+					if(key==L"file"){
+						update_file_info v(str);
+						auto k(v.name);
+						//if(filesystem::exists(k))
+						path_map.insert_or_assign(k,v);
+					}
 				}
-				if(key==L"file"){
-					update_file_info v(str);
-					auto k(v.name);
-					//if(filesystem::exists(k))
-					path_map.insert_or_assign(k,v);
-				}
+				fclose(fp);
 			}
 		};
 		void update(filesystem::path file_path){
@@ -109,6 +115,8 @@ namespace updatefile_n{
 			}
 		};
 		void write(FILE* fp){
+			if(charset == CODEPAGE_n::CP_ACP)
+				charset = CODEPAGE_n::CP_UTF8;
 			fputs(("charset,"+ CODEPAGE_n::UnicodeToMultiByte(CODEPAGE_n::CodePagetoString(charset), charset)+"\r\n").c_str(),fp);
 			for(auto&pair:path_map){
 				fputs(("file,"+ CODEPAGE_n::UnicodeToMultiByte((wstring)pair.second, charset)+"\r\n").c_str(),fp);
