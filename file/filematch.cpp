@@ -1,8 +1,8 @@
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <functional>
-#include "my-gists/STL/replace_all.hpp"
+#include "../STL/replace_all.hpp"
+#include "../file/dir_enum.cpp"
 namespace filepathMatcher_n{
 	using namespace std;
 	inline bool IsMatchRule(wstring s, wstring p) {
@@ -110,48 +110,48 @@ namespace filepathMatcher_n{
 		//ForDir
 	private:
 		static inline wstring base_path{};
-		void ForDir_mapper(filesystem::path path,function<void(filesystem::path)>do_what){
-			if(IsMatch(base_path+L"/"+path.filename().wstring())){
-				if(is_directory(path)){
-					auto base_path_bak = base_path;
-					base_path +=L"/"+path.filename().wstring();
-					if(base_path ==L"/")
-						base_path.clear();
-					for(auto& enty : filesystem::directory_iterator(path)){
-						ForDir_mapper(enty,do_what);
+		void ForDir_mapper(wstring path,function<void(wstring)>do_what){
+			CDirEnum ef(path);
+			CDirEnumEntry entry;
+			while(ef.next(entry)){
+				if(IsMatch(base_path+L"/"+entry.name)){
+					if(entry.isdir){
+						auto base_path_bak = base_path;
+						base_path +=L"/"+ entry.name;
+						ForDir_mapper(path + L"/" + entry.name,do_what);
+						base_path = base_path_bak;
 					}
-					base_path = base_path_bak;
-				}
-				else{
-					do_what(path);
+					else{
+						do_what(path+L"/"+entry.name);
+					}
 				}
 			}
 		}
-		void ForDir_mapper(filesystem::path path,function<void(filesystem::path,wstring)>do_what){
-			if(IsMatch(base_path+L"/"+path.filename().wstring())){
-				if(is_directory(path)){
-					auto base_path_bak = base_path;
-					base_path +=L"/"+path.filename().wstring();
-					if(base_path ==L"/")
-						base_path.clear();
-					for(auto& enty : filesystem::directory_iterator(path)){
-						ForDir_mapper(enty,do_what);
+		void ForDir_mapper(wstring path,function<void(wstring,wstring)>do_what){
+			CDirEnum ef(path);
+			CDirEnumEntry entry;
+			while(ef.next(entry)){
+				if(IsMatch(base_path+L"/"+entry.name)){
+					if(entry.isdir){
+						auto base_path_bak = base_path;
+						base_path +=L"/"+ entry.name;
+						ForDir_mapper(path + L"/" + entry.name,do_what);
+						base_path = base_path_bak;
 					}
-					base_path = base_path_bak;
-				}
-				else{
-					do_what(path, base_path+L"/"+path.filename().wstring());
+					else{
+						do_what(path+L"/"+entry.name,base_path+L"/"+entry.name);
+					}
 				}
 			}
 		}
 	public:
-		void ForDir(filesystem::path Dir,function<void(filesystem::path)>do_what){
+		void ForDir(wstring Dir,function<void(wstring)>do_what){
 			base_path = L"";
 			ForDir_mapper(Dir,do_what);
 		}
-		void ForDir(filesystem::path Dir, function<void(filesystem::path,wstring)>do_what) {
+		void ForDir(wstring Dir, function<void(wstring,wstring)>do_what) {
 			base_path = L"";
-			ForDir_mapper(Dir, do_what);
+			ForDir_mapper(Dir,do_what);
 		}
 	};
 	template class filepathMatcher_t<true>;

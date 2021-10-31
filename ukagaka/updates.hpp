@@ -9,6 +9,10 @@
 #include "../codepage.hpp"
 #include "../STL/to_time_t.hpp"
 #include "../file/fgetstring.h"
+#include "../file/dir_enum.h"
+#include "../file/windows/LastWriteTime.hpp"
+#include "../file/windows/GetFileSize.hpp"
+#include "../windows/FILETIME2time_t.h"
 namespace updatefile_n{
 	using namespace std;
 	struct update_file_info{
@@ -17,12 +21,12 @@ namespace updatefile_n{
 		wstring md5;
 		uintmax_t size;
 		wstring time;
-		static wstring time2str(time_t time) {
-				wchar_t buf[512];
-				if (wcsftime(buf, 512, L"%FT%T", gmtime(&time)))
-						return buf;
-				else
-						return L"2012-12-21T00:00:00";
+		static wstring time2str(time_t atime) {
+			wchar_t buf[512];
+			if (wcsftime(buf, 512, L"%FT%T", gmtime(&atime)))
+				return buf;
+			else
+				return L"2012-12-21T00:00:00";
 		};
 		explicit update_file_info(wstring str) {
 			name=str.substr(0,str.find(L"\1"));
@@ -37,11 +41,11 @@ namespace updatefile_n{
 			//2021-03-21T14:33:27
 			time = str.substr(0, str.find(L"\1"));
 		}
-		explicit update_file_info(filesystem::path file,wstring filename) {
+		explicit update_file_info(wstring file,wstring filename) {
 			name = filename;
-			md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file.string()),CODEPAGE_n::CP_ACP);
-			size = file_size(file);
-			time = time2str(to_time_t(last_write_time(file)));
+			md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file),CODEPAGE_n::CP_ACP);
+			size = GetFileSize(file.c_str());
+			time = time2str(FILETIME2time_t(LastWriteTime(file.c_str())));
 		}
 		explicit operator wstring(){
 			return name+L"\1"+md5+L"\1"+L"size="+to_wstring(size)+L"\1"+L"date="+time+L"\1";

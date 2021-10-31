@@ -55,6 +55,28 @@ public:
 		str_md5 = to_string(&ctx);
 		return str_md5;
 	}
+	std::string get_file_md5(const std::wstring& filename)
+	{
+		std::string str_md5;
+		MD5_CTX ctx = { 0 };
+		std::ifstream file(filename, std::ios::binary | std::ios::in);
+		if (file.is_open())
+		{
+			char data[1024] = { 0 };
+			long long len = 0;
+			mInit(&ctx);
+			while (!file.eof())
+			{
+				file.read(data, 1024);
+				mUpdate(&ctx, data, (UINT)file.gcount());
+				len += file.gcount();
+			}
+			mFinal(&ctx);
+			str_md5 = to_string(&ctx);
+			file.close();
+		}
+		return str_md5;
+	}
 	std::string get_file_md5(const std::string& filename)
 	{
 		std::string str_md5;

@@ -1,6 +1,5 @@
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <functional>
 namespace filepathMatcher_n{
 	template<bool default_as_all_match=true>
@@ -28,11 +27,11 @@ namespace filepathMatcher_n{
 		//ForDir
 	private:
 		static std::wstring base_path;
-		void ForDir_mapper(std::filesystem::path path, std::function<void(std::filesystem::path)>do_what);
-		void ForDir_mapper(std::filesystem::path path, std::function<void(std::filesystem::path, std::wstring)>do_what);
+		void ForDir_mapper(std::wstring path, std::function<void(std::wstring)>do_what);
+		void ForDir_mapper(std::wstring path, std::function<void(std::wstring, std::wstring)>do_what);
 	public:
-		void ForDir(std::filesystem::path Dir, std::function<void(std::filesystem::path)>do_what);
-		void ForDir(std::filesystem::path Dir, std::function<void(std::filesystem::path, std::wstring)>do_what);
+		void ForDir(std::wstring Dir, std::function<void(std::wstring)>do_what);
+		void ForDir(std::wstring Dir, std::function<void(std::wstring, std::wstring)>do_what);
 	};
 	typedef filepathMatcher_t<true> DefaultAllMatchFilepathMatcher;
 	typedef filepathMatcher_t<false> DefaultNoneMatchFilepathMatcher;
