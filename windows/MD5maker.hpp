@@ -59,21 +59,17 @@ public:
 	{
 		std::string str_md5;
 		MD5_CTX ctx = { 0 };
-		std::ifstream file(filename, std::ios::binary | std::ios::in);
-		if (file.is_open())
+		auto fp=_wfopen(filename.c_str(),L"rb");
+		if (fp)
 		{
 			char data[1024] = { 0 };
-			long long len = 0;
+			size_t c = 0;
 			mInit(&ctx);
-			while (!file.eof())
-			{
-				file.read(data, 1024);
-				mUpdate(&ctx, data, (UINT)file.gcount());
-				len += file.gcount();
-			}
+			while (c=fread(data,1,1024,fp))
+				mUpdate(&ctx, data, (UINT)c);
 			mFinal(&ctx);
 			str_md5 = to_string(&ctx);
-			file.close();
+			fclose(fp);
 		}
 		return str_md5;
 	}
@@ -81,21 +77,17 @@ public:
 	{
 		std::string str_md5;
 		MD5_CTX ctx = { 0 };
-		std::ifstream file(filename, std::ios::binary | std::ios::in);
-		if (file.is_open())
+		auto fp=fopen(filename.c_str(),"rb");
+		if (fp)
 		{
 			char data[1024] = { 0 };
-			long long len = 0;
+			size_t c = 0;
 			mInit(&ctx);
-			while (!file.eof())
-			{
-				file.read(data, 1024);
-				mUpdate(&ctx, data, (UINT)file.gcount());
-				len += file.gcount();
-			}
+			while (c=fread(data,1,1024,fp))
+				mUpdate(&ctx, data, (UINT)c);
 			mFinal(&ctx);
 			str_md5 = to_string(&ctx);
-			file.close();
+			fclose(fp);
 		}
 		return str_md5;
 	}

@@ -2,12 +2,10 @@
 #include <string>
 #include <map>
 #include <ctime>
-#include <filesystem>
 #include <cstdio>
 #include "../file/filematch.hpp"
 #include "../windows/MD5maker.hpp"
 #include "../codepage.hpp"
-#include "../STL/to_time_t.hpp"
 #include "../file/fgetstring.h"
 #include "../file/dir_enum.h"
 #include "../file/windows/LastWriteTime.hpp"
@@ -57,7 +55,7 @@ namespace updatefile_n{
 		filepathMatcher_n::DefaultAllMatchFilepathMatcher matcher;
 		//map<update_file_info,wstring>md5_map;
 	public:
-		void readrules(filesystem::path file_path) {
+		void readrules(wstring file_path) {
 			matcher.clear();
 			wstring str;
 			auto fp=_wfopen(file_path.c_str(), L"r");
@@ -70,7 +68,7 @@ namespace updatefile_n{
 			}
 			matcher.reverse();//match->ignore
 		}
-		void read(filesystem::path file_path){
+		void read(wstring file_path){
 			path_map.clear();
 			charset=CODEPAGE_n::CP_ACP;
 			wstring str;
@@ -94,25 +92,25 @@ namespace updatefile_n{
 				fclose(fp);
 			}
 		};
-		void update(filesystem::path file_path){
+		void update(wstring file_path){
 			for(auto it = path_map.begin(); it != path_map.end();) {
-				if(!filesystem::exists(file_path.parent_path()/it->first)){
+				if(!_waccess((file_path+it->first).c_str(),0)){
 					it=path_map.erase(it);
 				}
 				else
 					it++;
 			}
 			matcher.ForDir(file_path,
-				[this](filesystem::path file_path,wstring filename){
+				[this](wstring file_path,wstring filename){
 					filename= filename.substr(1);//"/ghost"->"ghost"
 					update_file_info v(file_path, filename);
-					filesystem::path k(v.name);
+					wstring k(v.name);
 					path_map.insert_or_assign(k,v);
 				}
 			);
 		};
-		void write(filesystem::path filepath){
-			auto fp = _wfopen(filepath.wstring().c_str(), L"wb");
+		void write(wstring filepath){
+			auto fp = _wfopen(filepath.c_str(), L"wb");
 			if (fp) {
 				write(fp);
 				fclose(fp);
