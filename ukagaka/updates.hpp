@@ -17,8 +17,8 @@ namespace updatefile_n{
 		//ghost/master/data/Game/UNO/bReverse.png4dbfeee82e8f6e476b5687c18154a571size=1732date=2021-03-21T14:33:27
 		wstring name;
 		wstring md5;
-		uintmax_t size;
-		wstring time;
+		uintmax_t size=0;
+		wstring time=L"2012-12-21T00:00:00";
 		static wstring time2str(time_t atime) {
 			wchar_t buf[512];
 			if (wcsftime(buf, 512, L"%FT%T", gmtime(&atime)))
@@ -45,8 +45,27 @@ namespace updatefile_n{
 			size = GetFileSize(file.c_str());
 			time = time2str(FILETIME2time_t(LastWriteTime(file.c_str())));
 		}
+		update_file_info(const update_file_info&) = default;
+		update_file_info(update_file_info&&) = default;
+		update_file_info() = default;
 		explicit operator wstring(){
 			return name+L"\1"+md5+L"\1"+L"size="+to_wstring(size)+L"\1"+L"date="+time+L"\1";
+		}
+		update_file_info& operator=(const update_file_info&) = default;
+		update_file_info& operator=(update_file_info&&) = default;
+		void update(wstring file, wstring filename) {
+			auto ttime = time2str(FILETIME2time_t(LastWriteTime(file.c_str())));
+			if (time != ttime) {
+				time = ttime;
+				name = filename;
+				md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file), CODEPAGE_n::CP_ACP);
+				size = GetFileSize(file.c_str());
+			}
+		}
+		void update_with_out_time(wstring file, wstring filename) {
+			name = filename;
+			md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file), CODEPAGE_n::CP_ACP);
+			size = GetFileSize(file.c_str());
 		}
 	};
 	class update_file{
@@ -85,8 +104,7 @@ namespace updatefile_n{
 					if(key==L"file"){
 						update_file_info v(str);
 						auto k(v.name);
-						//if(filesystem::exists(k))
-						path_map.insert_or_assign(k,v);
+						path_map[k]=v;
 					}
 				}
 				fclose(fp);
@@ -94,7 +112,7 @@ namespace updatefile_n{
 		};
 		void update(wstring file_path){
 			for(auto it = path_map.begin(); it != path_map.end();) {
-				if(!_waccess((file_path+it->first).c_str(),0)){
+				if(_waccess((file_path+it->first).c_str(),0)){
 					it=path_map.erase(it);
 				}
 				else
@@ -103,9 +121,24 @@ namespace updatefile_n{
 			matcher.ForDir(file_path,
 				[this](wstring file_path,wstring filename){
 					filename= filename.substr(1);//"/ghost"->"ghost"
-					update_file_info v(file_path, filename);
-					wstring k(v.name);
-					path_map.insert_or_assign(k,v);
+					wstring k(filename);
+					path_map[k].update(file_path, filename);
+				}
+			);
+		};
+		void update_with_out_time(wstring file_path){
+			for(auto it = path_map.begin(); it != path_map.end();) {
+				if(_waccess((file_path+it->first).c_str(),0)){
+					it=path_map.erase(it);
+				}
+				else
+					it++;
+			}
+			matcher.ForDir(file_path,
+				[this](wstring file_path,wstring filename){
+					filename= filename.substr(1);//"/ghost"->"ghost"
+					wstring k(filename);
+					path_map[k].update_with_out_time(file_path, filename);
 				}
 			);
 		};
