@@ -112,7 +112,8 @@ namespace updatefile_n{
 		};
 		void update(wstring file_path){
 			for(auto it = path_map.begin(); it != path_map.end();) {
-				if(_waccess((file_path+it->first).c_str(),0)){
+				auto filename=file_path+it->first;
+				if((!matcher(filename))||_waccess(filename.c_str(),0)){
 					it=path_map.erase(it);
 				}
 				else
@@ -128,7 +129,8 @@ namespace updatefile_n{
 		};
 		void update_with_out_time(wstring file_path){
 			for(auto it = path_map.begin(); it != path_map.end();) {
-				if(_waccess((file_path+it->first).c_str(),0)){
+				auto filename=file_path+it->first;
+				if((!matcher(filename))||_waccess(filename.c_str(),0)){
 					it=path_map.erase(it);
 				}
 				else
