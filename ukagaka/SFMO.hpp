@@ -5,7 +5,7 @@ struct SFMO_obj_t{
 	map<wstring,wstring> map;
 }
 struct SFMO_t{
-	map<ID,SFMO_obj_t> map;
+	map<wstring,SFMO_obj_t> info_map;
 	bool Update_info(){
 		//ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
 		HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
