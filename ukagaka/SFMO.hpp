@@ -1,7 +1,7 @@
 #include <string>
 #include <map>
 //ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
-HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraFMO");
+HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
 
 //FMO用Mutexに対応していないベースウェアもあるので、見つからなかったら単にスキップ
 bool isWaitSuccess = true;
@@ -19,11 +19,11 @@ if ( hMutex ) {
 if ( isWaitSuccess ) {
 
 	//保持すべきアプリは代わりにCreateMutexを使う
-	HANDLE hFMO = OpenFileMapping(FILE_MAP_ALL_ACCESS,FALSE,"Sakura");
+	HANDLE hFMO = OpenFileMapping(FILE_MAP_ALL_ACCESS,FALSE,"SakuraUnicode");
 
 	if ( hFMO ) {
 
-		char *pDataStart = static_cast<char*>(MapViewOfFile(hFMO,FILE_MAP_ALL_ACCESS,0,0,0));
+		wchar_t *pDataStart = static_cast<wchar_t*>(MapViewOfFile(hFMO,FILE_MAP_ALL_ACCESS,0,0,0));
 
 		if ( pDataStart ) {
 
@@ -31,8 +31,7 @@ if ( isWaitSuccess ) {
 			//文字列終端（C言語文字列のゼロ終端）とは異なるので注意。
 			unsigned long length = *reinterpret_cast<unsigned long*>(pDataStart);
 
-			char *pData = pDataStart;
-			pData += 4;
+			wchar_t *pData = (wchar_t*)(((char*)pDataStart)+4);
 
 			//****************************************
 			//ここでpDataとlengthをつかってなにかやる
