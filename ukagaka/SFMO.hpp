@@ -1,5 +1,7 @@
+#pragma once
 #include <string>
 #include <map>
+#include <windows.h>
 struct SFMO_obj_t{
 	std::wstring ID;
 	std::map<std::wstring, std::wstring> map;
