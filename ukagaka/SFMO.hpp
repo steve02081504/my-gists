@@ -1,11 +1,11 @@
 #include <string>
 #include <map>
 struct SFMO_obj_t{
-	wstring ID;
-	map<wstring,wstring> map;
-}
+	std::wstring ID;
+	std::map<std::wstring, std::wstring> map;
+};
 struct SFMO_t{
-	map<wstring,SFMO_obj_t> info_map;
+	std::map<std::wstring,SFMO_obj_t> info_map;
 	bool Update_info(){
 		//ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
 		HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
@@ -40,9 +40,22 @@ struct SFMO_t{
 
 					wchar_t *pData = (wchar_t*)(((char*)pDataStart)+4);
 
-					//****************************************
-					//ここでpDataとlengthをつかってなにかやる
-					//****************************************
+					std::wstring FMOinfo(pData,length);
+					std::wstring line,ID,key,value;
+
+					do{
+						auto end=FMOinfo.find(L"\r\n");
+						line=FMOinfo.substr(0,end);
+						auto suber = line.find(L'.');
+						ID = line.substr(0, suber);
+						line.erase(0, suber+1);
+						suber = line.find(L'\1');
+						key = line.substr(0, suber);
+						line.erase(0, suber + 1);
+						value = line;
+
+						info_map[ID].map[key] = value;
+					} while (line.size());
 
 					//MapViewOfFileの解除
 					UnmapViewOfFile(pDataStart);
@@ -68,4 +81,4 @@ struct SFMO_t{
 		
 		return isWaitSuccess && hMutex;
 	}
-}
+};

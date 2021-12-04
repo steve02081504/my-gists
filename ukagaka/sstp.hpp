@@ -1,3 +1,4 @@
+#pragma once
 #include "../socket.hpp"
 #include "../codepage.hpp"
 #include <map>
