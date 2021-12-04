@@ -1,5 +1,13 @@
 #include <string>
 #include <map>
+struct SFMO_info_t{
+	wstring ID;
+	map<wstring,wstring> map;
+}
+struct SFMO_t{
+	map<ID,SFMO_info_t> map;
+}
+
 //ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
 HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
 
