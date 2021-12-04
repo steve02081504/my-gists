@@ -1,68 +1,71 @@
 #include <string>
 #include <map>
-struct SFMO_info_t{
+struct SFMO_obj_t{
 	wstring ID;
 	map<wstring,wstring> map;
 }
 struct SFMO_t{
-	map<ID,SFMO_info_t> map;
-}
+	map<ID,SFMO_obj_t> map;
+	bool Update_info(){
+		//ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
+		HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
 
-//ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
-HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
+		//FMO用Mutexに対応していないベースウェアもあるので、見つからなかったら単にスキップ
+		bool isWaitSuccess = true;
 
-//FMO用Mutexに対応していないベースウェアもあるので、見つからなかったら単にスキップ
-bool isWaitSuccess = true;
+		if ( hMutex ) {
 
-if ( hMutex ) {
-
-	//INFINITEで待機すると永遠に待ち続けてGUIが止まるので適宜工夫すること
-	DWORD result = WaitForSingleObject(hMutex,INFINITE);
-	
-	if ( result != WAIT_OBJECT_0 ) {
-		isWaitSuccess = false;
-	}
-}
-
-if ( isWaitSuccess ) {
-
-	//保持すべきアプリは代わりにCreateMutexを使う
-	HANDLE hFMO = OpenFileMapping(FILE_MAP_ALL_ACCESS,FALSE,"SakuraUnicode");
-
-	if ( hFMO ) {
-
-		wchar_t *pDataStart = static_cast<wchar_t*>(MapViewOfFile(hFMO,FILE_MAP_ALL_ACCESS,0,0,0));
-
-		if ( pDataStart ) {
-
-			//頭の4バイトはFMO最大サイズ。
-			//文字列終端（C言語文字列のゼロ終端）とは異なるので注意。
-			unsigned long length = *reinterpret_cast<unsigned long*>(pDataStart);
-
-			wchar_t *pData = (wchar_t*)(((char*)pDataStart)+4);
-
-			//****************************************
-			//ここでpDataとlengthをつかってなにかやる
-			//****************************************
-
-			//MapViewOfFileの解除
-			UnmapViewOfFile(pDataStart);
-		}
+			//INFINITEで待機すると永遠に待ち続けてGUIが止まるので適宜工夫すること
+			DWORD result = WaitForSingleObject(hMutex,INFINITE);
 			
-		//FMOハンドルを開放
-		//ベースウェア等の保持すべきアプリは開放せず持ち続けること
-		CloseHandle(hFMO);
-	}
-}
+			if ( result != WAIT_OBJECT_0 ) {
+				isWaitSuccess = false;
+			}
+		}
 
-if ( hMutex ) {
-	if ( isWaitSuccess ) {
-	
-		//WaitForSingleObjectでMutexが非シグナル状態になるので、シグナル状態に戻す(Release)
-		ReleaseMutex(hMutex);
-	}
+		if ( isWaitSuccess ) {
 
-	//最後にMutexのハンドルも要らないので開放
-	//ベースウェア等の保持すべきアプリは開放せず持ち続けること
-	CloseHandle(hMutex);
+			//保持すべきアプリは代わりにCreateMutexを使う
+			HANDLE hFMO = OpenFileMapping(FILE_MAP_ALL_ACCESS,FALSE,"SakuraUnicode");
+
+			if ( hFMO ) {
+
+				wchar_t *pDataStart = static_cast<wchar_t*>(MapViewOfFile(hFMO,FILE_MAP_ALL_ACCESS,0,0,0));
+
+				if ( pDataStart ) {
+
+					//頭の4バイトはFMO最大サイズ。
+					//文字列終端（C言語文字列のゼロ終端）とは異なるので注意。
+					unsigned long length = *reinterpret_cast<unsigned long*>(pDataStart);
+
+					wchar_t *pData = (wchar_t*)(((char*)pDataStart)+4);
+
+					//****************************************
+					//ここでpDataとlengthをつかってなにかやる
+					//****************************************
+
+					//MapViewOfFileの解除
+					UnmapViewOfFile(pDataStart);
+				}
+					
+				//FMOハンドルを開放
+				//ベースウェア等の保持すべきアプリは開放せず持ち続けること
+				CloseHandle(hFMO);
+			}
+		}
+
+		if ( hMutex ) {
+			if ( isWaitSuccess ) {
+			
+				//WaitForSingleObjectでMutexが非シグナル状態になるので、シグナル状態に戻す(Release)
+				ReleaseMutex(hMutex);
+			}
+
+			//最後にMutexのハンドルも要らないので開放
+			//ベースウェア等の保持すべきアプリは開放せず持ち続けること
+			CloseHandle(hMutex);
+		}
+		
+		return isWaitSuccess && hMutex;
+	}
 }
