@@ -5,6 +5,7 @@
 struct SFMO_obj_t{
 	std::wstring ID;
 	std::map<std::wstring, std::wstring> map;
+	auto& operator[](std::wstring a) { return map[a]; }
 };
 struct SFMO_t{
 	std::map<std::wstring,SFMO_obj_t> info_map;
