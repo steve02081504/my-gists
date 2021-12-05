@@ -45,10 +45,13 @@ struct SFMO_t{
 					std::wstring line,ID,key,value;
 					info_map.clear();
 
-					do{
+					while (FMOinfo.size()){
 						auto end=FMOinfo.find(L"\r\n");
 						line=FMOinfo.substr(0,end);
-						FMOinfo = FMOinfo.substr(end);
+						if(end!= std::wstring::npos)
+							FMOinfo = FMOinfo.substr(end+2);
+						else
+							break;
 						auto suber = line.find(L'.');
 						ID = line.substr(0, suber);
 						line.erase(0, suber+1);
@@ -58,7 +61,7 @@ struct SFMO_t{
 						value = line;
 						if(ID.size())
 							info_map[ID].map[key] = value;
-					} while (line.size());
+					}
 
 					//MapViewOfFileの解除
 					UnmapViewOfFile(pDataStart);

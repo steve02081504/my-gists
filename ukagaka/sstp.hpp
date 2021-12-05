@@ -72,20 +72,74 @@ namespace SSTP_link_n{
 	template<class T>
 	auto operator+(T&&a,SSTP_ret_t&b) {return a+b.to_str();}
 
-	struct SSTP_link_t:Socket_link_t{
+	struct SSTP_link_t{
 		SSTP_link_args_t _header;
+		Socket_link_t* pSocket;
+		HWND ghost_hwnd,self_hwnd;
 
 		SSTP_link_t(
-					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}},
-					std::string addr="127.0.0.1",unsigned int port=9821
+					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
 					):
-			Socket_link_t(addr,port),_header(header){}
+		_header(header){
+			ghost_hwnd = NULL;
+			self_hwnd = GetActiveWindow();
+			if(!self_hwnd)
+				self_hwnd=GetConsoleWindow();
+			pSocket = nullptr;
+		}
+		~SSTP_link_t() {
+			delete pSocket;
+		}
 
+		bool Socket_link(std::string addr = "127.0.0.1", unsigned int port = 9821) {
+			delete pSocket;
+			try{pSocket = new Socket_link_t(addr, port);}
+			catch (...) { return 0; }
+			return 1;
+		}
+		bool link_to_ghost(HWND ghost) {
+			ghost_hwnd = ghost;
+			return ghost;
+		}
+		void base_send(std::string massage) {
+			if (ghost_hwnd) {
+				static COPYDATASTRUCT CDS{9801,0,0};
+				CDS.lpData = (void*)massage.c_str();
+				CDS.cbData = massage.size();
+				SendMessageA(ghost_hwnd,WM_COPYDATA,(WPARAM)self_hwnd,(LPARAM)&CDS);
+			}
+			else {
+				if(!pSocket)
+					Socket_link();
+				pSocket->base_send(massage);
+			}
+		}
+		std::string base_get_ret() {
+			if (ghost_hwnd) {
+				MSG Msg;
+				while(GetMessage(&Msg, NULL, 0, 0) > 0) {
+					TranslateMessage(&Msg);
+					if(Msg.message==WM_COPYDATA){
+						auto pCDS = (PCOPYDATASTRUCT) Msg.lParam;
+						if(pCDS->dwData==9801)
+							return std::string((char*)(pCDS->lpData),size_t(pCDS->cbData));
+					}
+					DispatchMessage(&Msg);
+				}
+				return std::string();
+			}
+			else {
+				if(!pSocket)
+					Socket_link();
+				return pSocket->base_get_ret();
+			}
+		}
 		std::wstring get_SSTP_head(std::wstring SSTP_type){
 			return SSTP_type+L"\r\n"+_header;
 		}
 		std::wstring base_SSTP_send(std::wstring head,SSTP_link_args_t args){
-			relink();//SSTP server can't process "keep-alive" style connection like HTTP: http://ssp.shillest.net/bts/view.php?id=170#c384
+			if(pSocket)
+				pSocket->relink();//SSTP server can't process "keep-alive" style connection like HTTP: http://ssp.shillest.net/bts/view.php?id=170#c384
 			{
 				auto send=get_SSTP_head(head)+args+L"\r\n";
 				auto charset=send;
