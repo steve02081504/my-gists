@@ -98,7 +98,10 @@ namespace SSTP_link_n{
 			return 1;
 		}
 		bool link_to_ghost(HWND ghost) {
-			ghost_hwnd = ghost;
+			if(ghost){
+				ghost_hwnd = ghost;
+				_header[L"HWnd"] = std::to_wstring((size_t)self_hwnd);
+			}
 			return ghost;
 		}
 		void base_send(std::string massage) {
