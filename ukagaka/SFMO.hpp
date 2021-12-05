@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <windows.h>
+#include "../codepage.hpp"
 struct SFMO_obj_t{
 	std::wstring ID;
 	std::map<std::wstring, std::wstring> map;
@@ -11,7 +12,7 @@ struct SFMO_t{
 	std::map<std::wstring,SFMO_obj_t> info_map;
 	bool Update_info(){
 		//ベースウェア等の保持すべきアプリは代わりにCreateMutexを使う
-		HANDLE hMutex = OpenMutex(MUTEX_ALL_ACCESS,FALSE,"SakuraUnicodeFMO");
+		HANDLE hMutex = OpenMutexW(MUTEX_ALL_ACCESS,FALSE,L"SakuraUnicodeFMO");
 
 		//FMO用Mutexに対応していないベースウェアもあるので、見つからなかったら単にスキップ
 		bool isWaitSuccess = true;
@@ -29,26 +30,25 @@ struct SFMO_t{
 		if ( isWaitSuccess ) {
 
 			//保持すべきアプリは代わりにCreateMutexを使う
-			HANDLE hFMO = OpenFileMapping(FILE_MAP_ALL_ACCESS,FALSE,"SakuraUnicode");
+			HANDLE hFMO = OpenFileMappingW(FILE_MAP_ALL_ACCESS,FALSE,L"SakuraUnicode");
 
 			if ( hFMO ) {
 
-				wchar_t *pDataStart = static_cast<wchar_t*>(MapViewOfFile(hFMO,FILE_MAP_ALL_ACCESS,0,0,0));
+				std::byte *pDataStart = static_cast<std::byte*>(MapViewOfFile(hFMO,FILE_MAP_ALL_ACCESS,0,0,0));
 
 				if ( pDataStart ) {
 
-					//頭の4バイトはFMO最大サイズ。
-					//文字列終端（C言語文字列のゼロ終端）とは異なるので注意。
-					unsigned long length = *reinterpret_cast<unsigned long*>(pDataStart);
+					char *pData = (char*)(pDataStart+4);
 
-					wchar_t *pData = (wchar_t*)(((char*)pDataStart)+4);
-
-					std::wstring FMOinfo(pData,length);
+					std::string FMOinfo_r(pData);
+					std::wstring FMOinfo = CODEPAGE_n::MultiByteToUnicode(FMOinfo_r, CODEPAGE_n::CP_UTF8);
 					std::wstring line,ID,key,value;
+					info_map.clear();
 
 					do{
 						auto end=FMOinfo.find(L"\r\n");
 						line=FMOinfo.substr(0,end);
+						FMOinfo = FMOinfo.substr(end);
 						auto suber = line.find(L'.');
 						ID = line.substr(0, suber);
 						line.erase(0, suber+1);
@@ -56,8 +56,8 @@ struct SFMO_t{
 						key = line.substr(0, suber);
 						line.erase(0, suber + 1);
 						value = line;
-
-						info_map[ID].map[key] = value;
+						if(ID.size())
+							info_map[ID].map[key] = value;
 					} while (line.size());
 
 					//MapViewOfFileの解除
