@@ -75,16 +75,18 @@ namespace SSTP_link_n{
 	struct SSTP_link_t{
 		SSTP_link_args_t _header;
 		Socket_link_t* pSocket;
-		HWND ghost_hwnd,self_hwnd;
+		//HWND ghost_hwnd,self_hwnd;
 
 		SSTP_link_t(
 					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
 					):
 		_header(header){
+			/*
 			ghost_hwnd = NULL;
 			self_hwnd = GetActiveWindow();
 			if(!self_hwnd)
 				self_hwnd=GetConsoleWindow();
+			*/
 			pSocket = nullptr;
 		}
 		~SSTP_link_t() {
@@ -97,6 +99,7 @@ namespace SSTP_link_n{
 			catch (...) { return 0; }
 			return 1;
 		}
+		/*
 		bool link_to_ghost(HWND ghost) {
 			if(ghost){
 				ghost_hwnd = ghost;
@@ -104,20 +107,24 @@ namespace SSTP_link_n{
 			}
 			return ghost;
 		}
+		*/
 		void base_send(std::string massage) {
+			/*
 			if (ghost_hwnd) {
 				static COPYDATASTRUCT CDS{9801,0,0};
 				CDS.lpData = (void*)massage.c_str();
 				CDS.cbData = massage.size();
 				SendMessageA(ghost_hwnd,WM_COPYDATA,(WPARAM)self_hwnd,(LPARAM)&CDS);
 			}
-			else {
+			else 
+			*/{
 				if(!pSocket)
 					return;
 				pSocket->base_send(massage);
 			}
 		}
 		std::string base_get_ret() {
+			/*
 			if (ghost_hwnd) {
 				MSG Msg;
 				while(GetMessage(&Msg, NULL, 0, 0) > 0) {
@@ -131,7 +138,8 @@ namespace SSTP_link_n{
 				}
 				return std::string();
 			}
-			else {
+			else 
+			*/{
 				if(!pSocket)
 					return"";
 				return pSocket->base_get_ret();
