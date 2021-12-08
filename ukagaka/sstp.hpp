@@ -113,7 +113,7 @@ namespace SSTP_link_n{
 			}
 			else {
 				if(!pSocket)
-					Socket_link();
+					return;
 				pSocket->base_send(massage);
 			}
 		}
@@ -133,7 +133,7 @@ namespace SSTP_link_n{
 			}
 			else {
 				if(!pSocket)
-					Socket_link();
+					return"";
 				return pSocket->base_get_ret();
 			}
 		}
@@ -143,6 +143,8 @@ namespace SSTP_link_n{
 		std::wstring base_SSTP_send(std::wstring head,SSTP_link_args_t args){
 			if(pSocket)
 				pSocket->relink();//SSTP server can't process "keep-alive" style connection like HTTP: http://ssp.shillest.net/bts/view.php?id=170#c384
+			else
+				Socket_link();
 			{
 				auto send=get_SSTP_head(head)+args+L"\r\n";
 				auto charset=send;
