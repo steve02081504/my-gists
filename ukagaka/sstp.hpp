@@ -77,18 +77,41 @@ namespace SSTP_link_n{
 		Socket_link_t* pSocket;
 		HWND ghost_hwnd,self_hwnd;
 
+		inline static std::string DirectSSTPret{};
+		static LRESULT WINAPI DirectSSTPHideWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+		{
+			switch(uMsg)
+			{
+			case WM_DESTROY:
+				PostQuitMessage(0);
+				return 0;
+			case WM_COPYDATA:
+				{
+					auto pCDS = (PCOPYDATASTRUCT)lParam;
+					if (pCDS->dwData == 9801)
+						DirectSSTPret = std::string((char*)(pCDS->lpData), size_t(pCDS->cbData));
+					return 0;
+				}
+			default:
+				return DefWindowProc(hWnd, uMsg, wParam, lParam);
+			}
+		}
+		inline static auto hInstance = GetModuleHandle(NULL);
+
+		inline static WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_DBLCLKS, DirectSSTPHideWndProc, 0, 0, hInstance, 0, 0, HBRUSH(COLOR_WINDOW + 1), 0, "DirectSSTPHideWindow", 0 };
+		inline static auto getter = RegisterClassEx(&wc);
 		SSTP_link_t(
 					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
 					):
 		_header(header){
 			ghost_hwnd = NULL;
-			self_hwnd = GetActiveWindow();
-			if(!self_hwnd)
-				self_hwnd=GetConsoleWindow();
+			self_hwnd = NULL;
 			pSocket = nullptr;
 		}
 		~SSTP_link_t() {
 			delete pSocket;
+			if(self_hwnd)
+				DestroyWindow(self_hwnd);
 		}
 
 		bool Socket_link(std::string addr = "127.0.0.1", unsigned int port = 9821) {
@@ -100,7 +123,13 @@ namespace SSTP_link_n{
 		bool link_to_ghost(HWND ghost) {
 			if(ghost){
 				ghost_hwnd = ghost;
-				_header[L"HWnd"] = std::to_wstring((size_t)self_hwnd);
+				if (getter){
+					self_hwnd = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOPMOST, "DirectSSTPHideWindow", NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, hInstance, nullptr);
+					ShowWindow(self_hwnd, SW_SHOW);
+					UpdateWindow(self_hwnd);
+				}
+				if(self_hwnd)
+					_header[L"HWnd"] = std::to_wstring((size_t)self_hwnd);
 			}
 			return ghost;
 		}
@@ -119,17 +148,13 @@ namespace SSTP_link_n{
 		}
 		std::string base_get_ret() {
 			if (ghost_hwnd) {
-				MSG Msg;
-				while(GetMessage(&Msg, NULL, 0, 0) > 0) {
+				MSG Msg{};
+				DirectSSTPret.clear();
+				while(GetMessage(&Msg, self_hwnd, 0, 0) > 0 && DirectSSTPret.empty()) {
 					TranslateMessage(&Msg);
-					if(Msg.message==WM_COPYDATA){
-						auto pCDS = (PCOPYDATASTRUCT) Msg.lParam;
-						if(pCDS->dwData==9801)
-							return std::string((char*)(pCDS->lpData),size_t(pCDS->cbData));
-					}
 					DispatchMessage(&Msg);
 				}
-				return std::string();
+				return DirectSSTPret;
 			}
 			else {
 				if(!pSocket)
