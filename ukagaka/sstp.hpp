@@ -75,18 +75,11 @@ namespace SSTP_link_n{
 	struct SSTP_link_t{
 		SSTP_link_args_t _header;
 		Socket_link_t* pSocket;
-		//HWND ghost_hwnd,self_hwnd;
 
 		SSTP_link_t(
 					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
 					):
 		_header(header){
-			/*
-			ghost_hwnd = NULL;
-			self_hwnd = GetActiveWindow();
-			if(!self_hwnd)
-				self_hwnd=GetConsoleWindow();
-			*/
 			pSocket = nullptr;
 		}
 		~SSTP_link_t() {
@@ -99,51 +92,33 @@ namespace SSTP_link_n{
 			catch (...) { return 0; }
 			return 1;
 		}
-		/*
 		bool link_to_ghost(HWND ghost) {
 			if(ghost){
-				ghost_hwnd = ghost;
-				_header[L"HWnd"] = std::to_wstring((size_t)self_hwnd);
+				_header[L"ReceiverGhostHWnd"] = std::to_wstring((size_t)ghost);
+			}
+			else {
+				_header._m.erase(L"ReceiverGhostHWnd");
 			}
 			return ghost;
 		}
-		*/
+		bool link_to_ghost(std::wstring ghost) {
+			if (!ghost.empty()) {
+				_header[L"ReceiverGhostName"] = ghost;
+			}
+			else {
+				_header._m.erase(L"ReceiverGhostName");
+			}
+			return !ghost.empty();
+		}
 		void base_send(std::string massage) {
-			/*
-			if (ghost_hwnd) {
-				static COPYDATASTRUCT CDS{9801,0,0};
-				CDS.lpData = (void*)massage.c_str();
-				CDS.cbData = massage.size();
-				SendMessageA(ghost_hwnd,WM_COPYDATA,(WPARAM)self_hwnd,(LPARAM)&CDS);
-			}
-			else 
-			*/{
-				if(!pSocket)
-					return;
-				pSocket->base_send(massage);
-			}
+			if(!pSocket)
+				return;
+			pSocket->base_send(massage);
 		}
 		std::string base_get_ret() {
-			/*
-			if (ghost_hwnd) {
-				MSG Msg;
-				while(GetMessage(&Msg, NULL, 0, 0) > 0) {
-					TranslateMessage(&Msg);
-					if(Msg.message==WM_COPYDATA){
-						auto pCDS = (PCOPYDATASTRUCT) Msg.lParam;
-						if(pCDS->dwData==9801)
-							return std::string((char*)(pCDS->lpData),size_t(pCDS->cbData));
-					}
-					DispatchMessage(&Msg);
-				}
-				return std::string();
-			}
-			else 
-			*/{
-				if(!pSocket)
-					return"";
-				return pSocket->base_get_ret();
-			}
+			if(!pSocket)
+				return"";
+			return pSocket->base_get_ret();
 		}
 		std::wstring get_SSTP_head(std::wstring SSTP_type){
 			return SSTP_type+L"\r\n"+_header;
