@@ -94,7 +94,7 @@ namespace SSTP_link_n{
 		}
 		bool link_to_ghost(HWND ghost) {
 			if(ghost){
-				_header[L"ReceiverGhostHWnd"] = std::to_wstring((size_t)ghost);
+				_header._m[L"ReceiverGhostHWnd"] = std::to_wstring((size_t)ghost);
 			}
 			else {
 				_header._m.erase(L"ReceiverGhostHWnd");
@@ -103,7 +103,7 @@ namespace SSTP_link_n{
 		}
 		bool link_to_ghost(std::wstring ghost) {
 			if (!ghost.empty()) {
-				_header[L"ReceiverGhostName"] = ghost;
+				_header._m[L"ReceiverGhostName"] = ghost;
 			}
 			else {
 				_header._m.erase(L"ReceiverGhostName");
