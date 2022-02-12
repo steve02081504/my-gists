@@ -6,7 +6,7 @@ void SetIcon(HWND hWnd, HICON hIcon) {
 	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 }
 void SetIcon(HWND hWnd, LPCWSTR pszFileName) {
-	HICON hIcon = (HICON)LoadImage(
+	HICON hIcon = (HICON)LoadImageW(
 		NULL, 
 		pszFileName,
 		IMAGE_ICON,
