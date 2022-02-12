@@ -1,11 +1,16 @@
 #pragma once
+#ifndef DONT_USE_SOCKET
 #include "../socket.hpp"
+#endif		 // !DONT_USE_SOCKET
 #include "../codepage.hpp"
 #include <map>
+#include <time.h>
 
 namespace SSTP_link_n{
 	using namespace CODEPAGE_n;
+	#ifndef DONT_USE_SOCKET
 	using namespace Socket_link_n;
+	#endif		 // !DONT_USE_SOCKET
 	struct SSTP_link_arg_parts_t{
 		std::wstring _name;
 		std::wstring _var;
@@ -72,17 +77,14 @@ namespace SSTP_link_n{
 	template<class T>
 	auto operator+(T&&a,SSTP_ret_t&b) {return a+b.to_str();}
 
-	struct SSTP_link_t{
-		SSTP_link_args_t _header;
-		Socket_link_t* pSocket;
+	#define dwDataOfDirectSSTP 9801
 
-		SSTP_link_t(
-					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
-					):
-		_header(header){
-			pSocket = nullptr;
-		}
-		~SSTP_link_t() {
+	#ifndef DONT_USE_SOCKET
+	struct SSTP_link_Socket_t {
+		Socket_link_t*	 pSocket = nullptr;
+		SSTP_link_args_t _header{};
+
+		~SSTP_link_Socket_t() {
 			delete pSocket;
 		}
 
@@ -113,34 +115,106 @@ namespace SSTP_link_n{
 		void base_send(std::string massage) {
 			if(!pSocket)
 				return;
-			pSocket->base_send(massage);
+			else
+				pSocket->base_send(massage);
 		}
 		std::string base_get_ret() {
 			if(!pSocket)
-				return"";
-			return pSocket->base_get_ret();
+				return "";
+			else
+				return pSocket->base_get_ret();
 		}
 		std::wstring get_SSTP_head(std::wstring SSTP_type){
 			return SSTP_type+L"\r\n"+_header;
 		}
-		std::wstring base_SSTP_send(std::wstring head,SSTP_link_args_t args){
+		void before_SSTP_send(){
 			if(pSocket)
 				pSocket->relink();//SSTP server can't process "keep-alive" style connection like HTTP: http://ssp.shillest.net/bts/view.php?id=170#c384
 			else
 				Socket_link();
+		}
+	};
+	#endif
+	struct SSTP_link_Direct_t {
+		bool usingDirectSSTP=0;
+		HWND toghost=0;
+		HWND replay_to=0;
+		std::string aret;
+
+		void link_to_ghost(HWND ghost) {
+			toghost = ghost;
+		}
+		void base_send(std::string massage) {
+			if(!toghost)
+				return;
+			COPYDATASTRUCT cdt;
+			cdt.cbData = massage.size();
+			cdt.lpData = (void*)massage.c_str();
+			cdt.dwData = dwDataOfDirectSSTP;
+			SendMessage(toghost, WM_COPYDATA, (WPARAM)replay_to, (LPARAM)&cdt);
+		}
+		std::string base_get_ret() {
+			if(!toghost || !replay_to)
+				return "";
+			MSG msg;
+			time_t sec=time(0);
+			while(1) {
+				if(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+					if(aret.size())
+						return aret;
+				}
+				else if(time(0) > sec + 7)
+					return "";
+				else
+					Sleep(250);
+			}
+		}
+		std::wstring get_SSTP_head(std::wstring SSTP_type){
+			return SSTP_type;
+		}
+		void before_SSTP_send(){
+			aret.clear();
+		}
+		void DirectSSTPprocess(COPYDATASTRUCT*pcdt) {
+			aret = std::string((char*)pcdt->lpData, (size_t)pcdt->cbData);
+		}
+		void setReplayHwnd(HWND hwnd) {
+			replay_to = hwnd;
+		}
+	};
+	template<typename base_link_t>
+	struct SSTP_link_T:base_link_t{
+		SSTP_link_args_t _header;
+
+		SSTP_link_T(
+					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
+					):
+		_header(header){}
+
+		std::wstring get_SSTP_head(std::wstring SSTP_type){
+			return base_link_t::get_SSTP_head(SSTP_type) + L"\r\n" + _header;
+		}
+		std::wstring base_SSTP_send(std::wstring head,SSTP_link_args_t args){
+			base_link_t::before_SSTP_send();
 			{
 				auto send=get_SSTP_head(head)+args+L"\r\n";
 				auto charset=send;
 				charset=charset.substr(charset.find(L"\r\nCharset: ")+11);
 				charset=charset.substr(0,charset.find(L"\r\n"));
-				base_send(UnicodeToMultiByte(send,StringtoCodePage(charset.c_str())));
+				base_link_t::base_send(UnicodeToMultiByte(send, StringtoCodePage(charset.c_str())));
 			}
 			{
-				auto temp = base_get_ret();
-				auto charset=temp;
-				charset=charset.substr(charset.find("\r\nCharset: ")+11);
-				charset=charset.substr(0,charset.find("\r\n"));
-				return MultiByteToUnicode(temp,StringtoCodePage(charset.c_str()));
+				auto temp = base_link_t::base_get_ret();
+				if(temp.size()) {
+					auto charset = temp;
+					charset		 = charset.substr(charset.find("\r\nCharset: ") + 11);
+					charset		 = charset.substr(0, charset.find("\r\n"));
+					return MultiByteToUnicode(temp, StringtoCodePage(charset.c_str()));
+				}
+				else
+					return L"";
 			}
 		}
 		SSTP_ret_t NOTYFY(SSTP_link_args_t args){
@@ -171,4 +245,10 @@ namespace SSTP_link_n{
 			return NOTYFY({{ L"Event", L"Has_Event" },{ L"Reference0", event_name }})[L"Result"]==L"1";
 		}
 	};
+	
+	#ifndef DONT_USE_SOCKET
+	typedef SSTP_link_T<SSTP_link_Socket_t> SSTP_link_t;
+	typedef SSTP_link_T<SSTP_link_Socket_t> SSTP_Socket_link_t;
+	#endif
+	typedef SSTP_link_T<SSTP_link_Direct_t> SSTP_Direct_link_t;
 }
