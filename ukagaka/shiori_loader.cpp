@@ -12,6 +12,7 @@ void Cshiori::init_methods(){
 	unload=(unload_type)GetProcAddress(dll,"unload");
 	request=(request_type)GetProcAddress(dll,"request");
 	checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
+	logsender=(logsender_type)GetProcAddress(dll,"logsend");
 }
 void Cshiori::call_load(LPCWSTR pszFileName){
 	loadok=1;
@@ -29,11 +30,13 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 	if(dll)
 		Dounload();
 	filename=pszFileName;
-	dll=LoadLibrary(pszFileName);
+	dll=LoadLibraryW(pszFileName);
 	init_methods();
 	if(All_OK()){
 		if(loghandler)
 			Set_loghandler(loghandler);
+		if(hwnd_for_logsender)
+			set_logsend_ok=set_logsend(hwnd_for_logsender);
 		call_load(pszFileName);
 	}
 	else
@@ -87,6 +90,22 @@ bool Cshiori::CI_check_failed(){
 
 bool Cshiori::can_make_CI_check(){
 	return checker;
+}
+
+bool Cshiori::can_set_logsend(){
+	return logsender;
+}
+
+bool Cshiori::set_logsend(HWND hwnd) {
+	return (!logsender)||logsender((long)hwnd);
+}
+
+void Cshiori::set_logsend_hwnd(HWND hwnd) {
+	hwnd_for_logsender=hwnd;
+}
+
+bool Cshiori::is_logsend_ok() {
+	return set_logsend_ok;
 }
 
 void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode, int id)){
