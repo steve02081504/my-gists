@@ -67,7 +67,7 @@ namespace SSTP_link_n{
 		auto to_map(){return operator SSTP_link_args_t();}
 		auto operator[](std::wstring a){return __m[a];}
 		auto get_head(){return _m.substr(_m.find(L"SSTP/"),_m.find(L"\r\n"));}
-		auto get_code(){return std::stoi(_m.substr(_m.find(L"SSTP/")+9,_m.find(L"SSTP/")+12));}
+		auto get_code(){return std::wcstoll(_m.substr(_m.find(L"SSTP/")+9,_m.find(L"SSTP/")+12).c_str(),NULL,10);}
 		auto var(){return __m.var();}
 		bool has(std::wstring a){return __m.has(a);}
 	};
