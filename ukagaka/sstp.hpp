@@ -51,6 +51,7 @@ namespace SSTP_link_n{
 		auto var(){return _m[L"Script"];}
 		bool has(std::wstring a){return _m.count(L"X-SSTP-PassThru-"+a);}
 		auto operator[](std::wstring a){return _m[L"X-SSTP-PassThru-"+a];}
+		std::map<std::wstring,std::wstring>& get_str_map(){return _m;}
 	};
 
 	template<class T>
@@ -70,6 +71,7 @@ namespace SSTP_link_n{
 		auto get_code(){return std::wcstoll(_m.substr(_m.find(L"SSTP/")+9,_m.find(L"SSTP/")+12).c_str(),NULL,10);}
 		auto var(){return __m.var();}
 		bool has(std::wstring a){return __m.has(a);}
+		auto& to_str_map(){return __m.get_str_map();}
 	};
 
 	template<class T>
