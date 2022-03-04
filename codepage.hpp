@@ -1,13 +1,18 @@
-//copy from https://github.com/ponapalt/csaori
+﻿//copy from https://github.com/ponapalt/csaori
 //
 #pragma once
 #include <vector>
 #include <string>
 #include <Windows.h>
 
+#if defined(_MSC_VER)
+	#pragma warning(push)
+	#pragma warning(disable:26812)//enum class安利警告diss
+#endif
 namespace CODEPAGE_n{
 	#undef CP_UTF8
 	#undef CP_ACP
+
 	typedef enum {
 		CP_SJIS=932,
 		CP_EUCJP=20932,
@@ -131,4 +136,7 @@ namespace CODEPAGE_n{
 		}
 		return CP_SJIS;
 	}
-}
+}		// namespace CODEPAGE_n
+#if defined(_MSC_VER)
+	#pragma warning(pop)
+#endif

@@ -84,7 +84,13 @@ struct SFMO_t{
 			//ベースウェア等の保持すべきアプリは開放せず持ち続けること
 			CloseHandle(hMutex);
 		}
-		
+		#if defined(_MSC_VER)
+			#pragma warning(push)
+			#pragma warning(disable:6001)//未初始化警告diss
+		#endif
 		return isWaitSuccess && hMutex;
+		#if defined(_MSC_VER)
+			#pragma warning(pop)
+		#endif
 	}
 };
