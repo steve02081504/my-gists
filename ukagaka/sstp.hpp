@@ -143,6 +143,9 @@ namespace SSTP_link_n{
 		HWND replay_to=0;
 		std::string aret;
 
+		bool was_linked_to_ghost() {
+			return toghost;
+		}
 		void link_to_ghost(HWND ghost) {
 			toghost = ghost;
 		}
