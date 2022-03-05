@@ -59,8 +59,10 @@ struct SFMO_t{
 						key = line.substr(0, suber);
 						line.erase(0, suber + 1);
 						value = line;
-						if(ID.size())
+						if(ID.size()) {
 							info_map[ID].map[key] = value;
+							info_map[ID].ID	   = ID;
+						}
 					}
 
 					//MapViewOfFileの解除
