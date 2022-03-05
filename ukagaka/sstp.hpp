@@ -68,7 +68,13 @@ namespace SSTP_link_n{
 		auto to_map(){return operator SSTP_link_args_t();}
 		auto operator[](std::wstring a){return __m[a];}
 		auto get_head(){return _m.substr(_m.find(L"SSTP/"),_m.find(L"\r\n"));}
-		auto get_code(){return std::wcstoll(_m.substr(_m.find(L"SSTP/")+9,_m.find(L"SSTP/")+12).c_str(),NULL,10);}
+		auto get_code(){
+			auto code_flag = _m.find(L"SSTP/");
+			if(code_flag == wstring::npos)
+				return (long long)-1;
+			else
+				return std::wcstoll(_m.substr(code_flag+9,code_flag+12).c_str(),NULL,10);
+		}
 		auto var(){return __m.var();}
 		bool has(std::wstring a){return __m.has(a);}
 		auto& to_str_map(){return __m.get_str_map();}
