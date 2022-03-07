@@ -7,6 +7,12 @@ struct SFMO_obj_t{
 	std::wstring ID;
 	std::map<std::wstring, std::wstring> map;
 	auto& operator[](std::wstring a) { return map[a]; }
+	auto get_modulestate(std::wstring a){
+		std::wstring modulestate = map[L"modulestate"];
+		modulestate=modulestate.substr(modulestate.find(a+L':'));
+		modulestate=modulestate.substr(0,modulestate.find(L','));
+		return modulestate.substr(modulestate.find(L':')+1);
+	}
 };
 struct SFMO_t{
 	std::map<std::wstring,SFMO_obj_t> info_map;
