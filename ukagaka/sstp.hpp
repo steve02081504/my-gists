@@ -70,7 +70,7 @@ namespace SSTP_link_n{
 		auto get_head(){return _m.substr(_m.find(L"SSTP/"),_m.find(L"\r\n"));}
 		auto get_code(){
 			auto code_flag = _m.find(L"SSTP/");
-			if(code_flag == wstring::npos)
+			if(code_flag == std::wstring::npos)
 				return (long long)-1;
 			else
 				return std::wcstoll(_m.substr(code_flag+9,code_flag+12).c_str(),NULL,10);
