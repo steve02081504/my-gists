@@ -14,9 +14,8 @@ struct SFMO_obj_t{
 			return {};
 		modulestate=modulestate.substr(t);
 		t=modulestate.find(L',');
-		if(t== std::wstring::npos)
-			return {};
-		modulestate=modulestate.substr(0,t);
+		if(t!= std::wstring::npos)
+			modulestate=modulestate.substr(0,t);
 		t=modulestate.find(L':');
 		if(t== std::wstring::npos)
 			return {};
