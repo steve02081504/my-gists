@@ -27,7 +27,7 @@ class Cshiori {
 	request_type request=NULL;
 	CI_check_type checker=NULL;
 	logsender_type logsender=NULL;
-	HWND hwnd_for_logsender;
+	HWND hwnd_for_logsender=NULL;
 	void (*loghandler)(const wchar_t *str, int mode, int id)=NULL;
 	CODEPAGE_n::CODEPAGE cp=CODEPAGE_n::CP_UTF8;
 	bool loadok=1,set_logsend_ok=1;
