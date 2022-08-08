@@ -1,4 +1,5 @@
+#pragma once
 #include <string>
 
 [[nodiscard]] std::wstring GetSSPpath();
-[[nodiscard]] bool IsSSPinstalled();
+[[nodiscard]] bool IsSSPinstalled(std::wstring sspPath=GetSSPpath());

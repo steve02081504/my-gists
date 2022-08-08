@@ -1,5 +1,5 @@
-#include <string>
-#include <Windows.h>
+#include "SSPpath.hpp"
+#include "../windows/CMDargsConverter.cpp"
 
 std::wstring GetSSPpath() {
 	// Get the path to the SSP folder at reg HKEY_CLASSES_ROOT\x-ukagaka-link\shell\open\command
@@ -26,8 +26,7 @@ std::wstring GetSSPpath() {
 	return sspPath;
 }
 
-bool IsSSPinstalled() {
-	std::wstring sspPath = GetSSPpath();
+bool IsSSPinstalled(std::wstring sspPath) {
 	if(sspPath.empty()) {
 		return false;
 	}
