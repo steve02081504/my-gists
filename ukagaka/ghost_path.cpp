@@ -4,7 +4,7 @@
 
 [[nodiscard]] bool is_ghost_path(std::wstring path) {
 	// "/" -> "\\"
-	path.replace(path.begin(), path.end(), L"/", L"\\");
+	replace_all(path, L"/", L"\\");
 	// "\\\\" -> "\\"
 	replace_all(path, L"\\\\", L"\\");
 	if(path.ends_with(L"ghost\\master\\")) {
@@ -16,7 +16,7 @@
 
 [[nodiscard]] bool path_in_ghost_dir(std::wstring path) {
 	// "/" -> "\\"
-	path.replace(path.begin(), path.end(), L"/", L"\\");
+	replace_all(path, L"/", L"\\");
 	// "\\\\" -> "\\"
 	replace_all(path, L"\\\\", L"\\");
 	if(path.contains(L"ghost\\master\\")) {
@@ -29,7 +29,7 @@
 
 [[nodiscard]] std::wstring get_ghost_path(std::wstring path) {
 	// "/" -> "\\"
-	path.replace(path.begin(), path.end(), L"/", L"\\");
+	replace_all(path, L"/", L"\\");
 	// "\\\\" -> "\\"
 	replace_all(path, L"\\\\", L"\\");
 	if(path.contains(L"ghost\\master\\")) {
@@ -44,7 +44,7 @@
 
 [[nodiscard]] std::wstring get_ghost_dir_name(std::wstring path) {
 	// "/" -> "\\"
-	path.replace(path.begin(), path.end(), L"/", L"\\");
+	replace_all(path, L"/", L"\\");
 	// "\\\\" -> "\\"
 	replace_all(path, L"\\\\", L"\\");
 	if(path.contains(L"ghost\\master\\")) {
