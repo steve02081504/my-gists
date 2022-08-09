@@ -12,6 +12,11 @@ struct SSP_Runner:EXE_Runner {
 	~SSP_Runner()=default;
 	[[nodiscard]] bool IsInstalled() const { return _installed; }
 	
+	void reset_path(std::wstring SSPpath = GetSSPpath()) {
+		_path = SSPpath;
+		_installed = IsSSPinstalled(SSPpath);
+	}
+	
 	virtual bool Run(std::wstring args)override final;
 	//operator()
 	using EXE_Runner::operator();
