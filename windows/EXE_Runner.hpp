@@ -11,9 +11,10 @@ struct EXE_Runner {
 	~EXE_Runner()=default;
 	[[nodiscard]] std::wstring GetPath() const { return _path; }
 
-	virtual bool Run(std::wstring args);
-	//operator()
+	virtual bool Base_Run(std::wstring args);
+	virtual bool Base_RunAndWait(std::wstring args);
 private:
+	//operator()
 	std::wstring args_builder() {
 		return {};
 	}
@@ -27,6 +28,10 @@ private:
 public:
 	template<typename...Args>
 	bool operator()(Args&&... args) {
-		return Run(args_builder(args...));
+		return Base_Run(args_builder(args...));
+	}
+	template<typename... Args>
+	bool RunAndWait(Args&&... args) {
+		return Base_RunAndWait(args_builder(args...));
 	}
 };

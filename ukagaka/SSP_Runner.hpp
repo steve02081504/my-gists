@@ -17,7 +17,8 @@ struct SSP_Runner:EXE_Runner {
 		_installed = IsSSPinstalled(SSPpath);
 	}
 	
-	virtual bool Run(std::wstring args)override final;
+	virtual bool Base_Run(std::wstring args) override final;
+	virtual bool Base_RunAndWait(std::wstring args) override final;
 	//operator()
 	using EXE_Runner::operator();
 	#define self (*this)
