@@ -8,12 +8,13 @@ bool EXE_Runner::Base_Run(std::wstring args) {
 }
 bool EXE_Runner::Base_RunAndWait(std::wstring args) {
 	//Execute the program and wait for it to finish
-	STARTUPINFO si;
+	STARTUPINFO			si;
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
-	if(!CreateProcessW(_path.c_str(), (LPWSTR)args.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+	auto cmdline = L"\"" + _path + L"\" " + args;
+	if(!CreateProcessW(NULL, cmdline.data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
 		return false;
 	WaitForSingleObject(pi.hProcess, INFINITE);
 	CloseHandle(pi.hProcess);
