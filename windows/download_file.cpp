@@ -7,17 +7,16 @@
 #include "download_file.hpp"
 #include "../codepage.hpp"
 #pragma comment(lib, "WinInet.lib")
-std::wstring get_domain_form_url(const std::wstring& url)
-{
+std::wstring get_domain_form_url(const std::wstring& url) {
 	std::wstring domain;
 	auto		 domain_begin = url.find(L"://");
-	if (domain_begin != std::wstring::npos)
+	if(domain_begin != std::wstring::npos)
 		domain_begin += 3;
 	else
 		domain_begin = url.find(L':');
-	if (domain_begin != std::wstring::npos) {
+	if(domain_begin != std::wstring::npos) {
 		auto domain_end = url.find_first_of(L"/\\", domain_begin);
-		if (domain_end == std::wstring::npos)
+		if(domain_end == std::wstring::npos)
 			domain_end = url.length();
 		domain = url.substr(domain_begin, domain_end - domain_begin);
 	}
@@ -44,7 +43,7 @@ std::wstring download_file(const std::wstring& url, const std::wstring& file) {
 		if(domain.empty())
 			throw std::runtime_error("InternetOpenUrlW failed");
 		else
-			throw std::runtime_error("InternetOpenUrlW failed, Please ensure that you can link to " + CODEPAGE_n::UnicodeToMultiByte(domain,0));
+			throw std::runtime_error("InternetOpenUrlW failed, Please ensure that you can link to " + CODEPAGE_n::UnicodeToMultiByte(domain, 0));
 	}
 	DWORD		  dwBytesRead	 = 0;
 	DWORD		  dwBytesWritten = 0;
