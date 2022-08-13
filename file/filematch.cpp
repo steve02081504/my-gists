@@ -146,11 +146,11 @@ namespace filepathMatcher_n{
 		}
 	public:
 		void ForDir(wstring Dir,function<void(wstring)>do_what){
-			base_path = L"";
+			base_path.clear();
 			ForDir_mapper(Dir,do_what);
 		}
 		void ForDir(wstring Dir, function<void(wstring,wstring)>do_what) {
-			base_path = L"";
+			base_path.clear();
 			ForDir_mapper(Dir,do_what);
 		}
 	};

@@ -31,7 +31,7 @@ namespace CODEPAGE_n{
 				}
 			}
 		}
-		return "";
+		return {};
 	}
 
 	inline std::wstring MultiByteToUnicode(const char* Source, unsigned int CodePage, DWORD Flags=0)
@@ -44,7 +44,7 @@ namespace CODEPAGE_n{
 				}
 			}
 		}
-		return L"";
+		return {};
 	}
 
 	inline std::string UnicodeToMultiByte(std::wstring Source, unsigned int CodePage, DWORD Flags=0)
@@ -57,7 +57,7 @@ namespace CODEPAGE_n{
 				}
 			}
 		}
-		return "";
+		return {};
 	}
 
 	inline std::wstring MultiByteToUnicode(std::string Source, unsigned int CodePage, DWORD Flags=0)
@@ -70,7 +70,7 @@ namespace CODEPAGE_n{
 				}
 			}
 		}
-		return L"";
+		return {};
 	}
 
 	inline std::wstring CodePagetoString(unsigned int cset){

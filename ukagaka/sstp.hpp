@@ -25,7 +25,7 @@ namespace SSTP_link_n{
 		explicit SSTP_link_args_t(std::wstring a){
 			if(a.find(L":") > a.find(L"\r\n"))
 				a.erase(0,a.find(L"\r\n"));
-			while(a!=L""){
+			while(!a.empty()){
 				std::wstring t=a.substr(0,a.find(L"\r\n"));
 				if (t.find(L": ")!=t.npos){
 					_m[t.substr(0,t.find(L": "))]=t.substr(t.find(L": ")+2);
@@ -128,7 +128,7 @@ namespace SSTP_link_n{
 		}
 		std::string base_get_ret() {
 			if(!pSocket)
-				return "";
+				return {};
 			else
 				return pSocket->base_get_ret();
 		}
@@ -166,7 +166,7 @@ namespace SSTP_link_n{
 		}
 		std::string base_get_ret() {
 			if(!toghost || !replay_to)
-				return "";
+				return {};
 			MSG msg;
 			time_t sec=time(0);
 			while(1) {
@@ -177,7 +177,7 @@ namespace SSTP_link_n{
 						return aret;
 				}
 				else if(time(0) > sec + 7)
-					return "";
+					return {};
 				else
 					Sleep(250);
 			}
@@ -225,7 +225,7 @@ namespace SSTP_link_n{
 					return MultiByteToUnicode(temp, StringtoCodePage(charset.c_str()));
 				}
 				else
-					return L"";
+					return {};
 			}
 		}
 		SSTP_ret_t NOTYFY(SSTP_link_args_t args){

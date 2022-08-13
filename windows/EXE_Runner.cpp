@@ -1,4 +1,5 @@
 #include "../windows/CMDargsConverter.cpp"
+#include "../windows/WaitForXObjectWithMessageLoop.hpp"
 #include "EXE_Runner.hpp"
 
 bool EXE_Runner::Base_Run(std::wstring args) {
@@ -16,7 +17,7 @@ bool EXE_Runner::Base_RunAndWait(std::wstring args) {
 	auto cmdline = L"\"" + _path + L"\" " + args;
 	if(!CreateProcessW(NULL, cmdline.data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
 		return false;
-	WaitForSingleObject(pi.hProcess, INFINITE);
+	WaitForSingleObjectWithMessageLoop(pi.hProcess, INFINITE);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	return true;

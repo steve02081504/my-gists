@@ -39,7 +39,7 @@
 			return ghost_path;
 		}
 	}
-	return L"";
+	return {};
 }
 
 [[nodiscard]] std::wstring get_ghost_dir_name(std::wstring path) {
@@ -57,5 +57,5 @@
 			return ghost_dir_name;
 		}
 	}
-	return L"";
+	return {};
 }
