@@ -1,5 +1,5 @@
 #include "../windows/CMDargsConverter.cpp"
-#include "../windows/WaitForXObjectWithMessageLoop.hpp"
+#include "../windows/WaitForXObjectWithMessageLoop.cpp"
 #include "EXE_Runner.hpp"
 
 bool EXE_Runner::Base_Run(std::wstring args) {
