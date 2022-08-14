@@ -1,4 +1,5 @@
-﻿#include "WaitForXObjectWithMessageLoop.hpp"
+﻿#pragma once
+#include "WaitForXObjectWithMessageLoop.hpp"
 #include <windows.h>
 
 DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds) {
