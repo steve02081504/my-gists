@@ -10,9 +10,10 @@ DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds) {
 			::DispatchMessage(&msg);
 		}
 		else {
-			auto  msec_wait = min(100, dwMilliseconds);
-			DWORD dwRet		= ::WaitForSingleObject(hHandle, msec_wait);
-			dwMilliseconds -= msec_wait;
+			auto msec_wait = min(100, dwMilliseconds);
+			if(dwMilliseconds != INFINITE)
+				dwMilliseconds -= msec_wait;
+			DWORD dwRet = ::WaitForSingleObject(hHandle, msec_wait);
 			if(dwRet == WAIT_TIMEOUT) {
 				if(dwMilliseconds == 0)
 					return dwRet;
