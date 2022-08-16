@@ -7,6 +7,7 @@ std::wstring GetSSPpath() {
 	HKEY hKey;
 	LONG lResult = RegOpenKeyExW(HKEY_CLASSES_ROOT, L"x-ukagaka-link\\shell\\open\\command", 0, KEY_READ, &hKey);
 	if(lResult != ERROR_SUCCESS) {
+	serch_in_mui_cache:
 		//serch for the SSP path in the registry HKEY_CLASSES_ROOT\Local Settings\Software\Microsoft\Windows\Shell\MuiCache
 		lResult = RegOpenKeyExW(HKEY_CLASSES_ROOT, L"Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache", 0, KEY_READ, &hKey);
 		if(lResult != ERROR_SUCCESS)
@@ -59,14 +60,17 @@ std::wstring GetSSPpath() {
 		lResult = RegQueryValueExW(hKey, NULL, NULL, &dwType, (LPBYTE)szValue, &dwSize);
 		RegCloseKey(hKey);
 		if(lResult != ERROR_SUCCESS)
-			return {};
+			goto serch_in_mui_cache;
 		//szValue like "E:\ssp\ssp.exe" /M "%1"
 		std::wstring sspPath = szValue;
 		auto		 pos	 = sspPath.find_last_of(L"\" /M \"%1\"");
 		if(pos == std::wstring::npos)
-			return {};
+			goto serch_in_mui_cache;
 		sspPath = sspPath.substr(1, pos - 9);
-		return sspPath;
+		if(_waccess(sspPath.c_str(), 0) == 0)
+			return sspPath;
+		else
+			goto serch_in_mui_cache;
 	}
 }
 
