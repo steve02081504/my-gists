@@ -2,7 +2,7 @@
 #include <map>
 #include <vector>
 #include <stdexcept>
-#include "CutSpace.cpp"
+#include "CutSpace.hpp"
 #if defined(_WIN32)
 	#include "../codepage.hpp"
 	#include <wininet.h>

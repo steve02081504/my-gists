@@ -1,14 +1,16 @@
-﻿#include <string>
+﻿#pragma once
+#include <string>
 #include <map>
 #include <vector>
 #include <stdexcept>
+#include <fstream>
 #include "CutSpace.cpp"
-#include "yaml_reader.hpp"
 #if defined(_WIN32)
 	#include "../codepage.hpp"
 	#include <wininet.h>
 	#pragma comment(lib, "WinInet.lib")
 #endif
+#include "yaml_reader.hpp"
 
 bool yaml_reader::read_line(std::wstring line) {
 	CutSpace(line);
@@ -26,7 +28,7 @@ bool yaml_reader::read_line(std::wstring line) {
 		}
 		std::wstring key		  = line.substr(0, pos);
 		std::wstring value		  = line.substr(pos + 1);
-		_data[reading_index][key] = value;
+		_data[reading_index][key] = CutSpace(value);
 	}
 }
 
@@ -89,7 +91,7 @@ bool yaml_reader::read_url(const std::wstring& url) {
 }
 #endif
 
-yaml_map yaml_reader::find(std::wstring key, std::wstring value) {
+yaml_reader::yaml_map yaml_reader::find(std::wstring key, std::wstring value) {
 	for(auto& map: _data) {
 		auto it = map.find(key);
 		if(it != map.end() && it->second == value) {
