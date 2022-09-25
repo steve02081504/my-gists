@@ -22,12 +22,12 @@ std::wstring get_domain_form_url(const std::wstring& url) {
 	}
 	return domain;
 }
-std::wstring download_file(const std::wstring& url, const std::wstring& file) {
-	if(_waccess(file.c_str(), 0) == 0) {
+std::wstring download_file(const wchar_t* url, const wchar_t* file) {
+	if(_waccess(file, 0) == 0) {
 		return file;
 	}
 	//
-	HANDLE hFileHandle = CreateFileW(file.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+	HANDLE hFileHandle = CreateFileW(file, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
 	if(hFileHandle == INVALID_HANDLE_VALUE) {
 		throw std::runtime_error("CreateFileW failed");
 	}
@@ -36,7 +36,7 @@ std::wstring download_file(const std::wstring& url, const std::wstring& file) {
 	if(hInternet == NULL) {
 		throw std::runtime_error("InternetOpenW failed");
 	}
-	HINTERNET hFile = InternetOpenUrlW(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_NO_CACHE_WRITE, 0);
+	HINTERNET hFile = InternetOpenUrlW(hInternet, url, NULL, 0, INTERNET_FLAG_NO_CACHE_WRITE, 0);
 	if(hFile == NULL) {
 		InternetCloseHandle(hInternet);
 		auto domain = get_domain_form_url(url);
@@ -61,15 +61,53 @@ std::wstring download_file(const std::wstring& url, const std::wstring& file) {
 	InternetCloseHandle(hInternet);
 	CloseHandle(hFileHandle);
 	if(!full_download) {
-		DeleteFileW(file.c_str());
+		DeleteFileW(file);
 		throw std::runtime_error("InternetReadFile failed");
 	}
 	return file;
 }
+std::wstring download_file(const std::wstring& url, const wchar_t* file) {
+	return download_file(url.c_str(), file);
+}
+std::wstring download_file(const wchar_t* url, const std::wstring& file) {
+	return download_file(url, file.c_str());
+}
+std::wstring download_file(const std::wstring& url, const std::wstring& file) {
+	return download_file(url.c_str(), file.c_str());
+}
+
 std::wstring download_temp_file(const std::wstring& url, const std::wstring& file_suffix) {
 	return download_file(url, get_temp_filename(file_suffix));
 }
+std::wstring download_temp_file(const wchar_t* url, const std::wstring& file_suffix) {
+	return download_file(url, get_temp_filename(file_suffix));
+}
+std::wstring download_temp_file(const std::wstring& url, const wchar_t* file_suffix) {
+	return download_file(url, get_temp_filename(file_suffix));
+}
+std::wstring download_temp_file(const wchar_t* url, const wchar_t* file_suffix) {
+	return download_file(url, get_temp_filename(file_suffix));
+}
+std::wstring download_temp_file(const std::wstring& url) {
+	return download_file(url, get_temp_filename());
+}
+std::wstring download_temp_file(const wchar_t* url) {
+	return download_file(url, get_temp_filename());
+}
+
 std::wstring download_file_to_temp_dir(const std::wstring& url, const std::wstring& filename) {
 	auto filepath = get_temp_path() + filename;
+	return download_file(url, filepath);
+}
+std::wstring download_file_to_temp_dir(const wchar_t* url, const std::wstring& filename) {
+	auto filepath = get_temp_path() + filename;
+	return download_file(url, filepath);
+}
+std::wstring download_file_to_temp_dir(const std::wstring& url, const wchar_t* filename) {
+	auto filepath = std::wstring{} + get_temp_path() + filename;
+	return download_file(url, filepath);
+}
+std::wstring download_file_to_temp_dir(const wchar_t* url, const wchar_t* filename) {
+	auto filepath = std::wstring{} + get_temp_path() + filename;
 	return download_file(url, filepath);
 }
