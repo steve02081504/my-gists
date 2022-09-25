@@ -32,6 +32,9 @@ struct SSP_Runner:EXE_Runner {
 	bool install_nar(std::wstring file_path) {
 		return self(L"/I", file_path);
 	}
+	bool install_nar_and_delete_source_if_succes(std::wstring file_path) {
+		return self(L"/I", file_path, L"/o", L"deletesource");
+	}
 	bool install_ssf(std::wstring file_path) {
 		return self(L"/S", file_path);
 	}
