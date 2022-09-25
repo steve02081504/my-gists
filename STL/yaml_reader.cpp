@@ -30,6 +30,7 @@ bool yaml_reader::read_line(std::wstring line) {
 		std::wstring value		  = line.substr(pos + 1);
 		_data[reading_index][key] = CutSpace(value);
 	}
+	return true;
 }
 
 void yaml_reader::reader_init() {
@@ -37,7 +38,7 @@ void yaml_reader::reader_init() {
 	reading_index = size_t(-1);
 }
 
-void yaml_reader::read_file(const std::wstring& file_path) {
+void yaml_reader::read_file(const wchar_t*file_path) {
 	std::wifstream file(file_path);
 	if(!file.is_open()) {
 		throw std::runtime_error("file not found");
@@ -48,15 +49,18 @@ void yaml_reader::read_file(const std::wstring& file_path) {
 		read_line(line);
 	}
 }
+void yaml_reader::read_file(const std::wstring& file_path){
+	read_file(file_path.c_str());
+}
 
 #if defined(_WIN32)
-bool yaml_reader::read_url(const std::wstring& url) {
+bool yaml_reader::read_url(const wchar_t*url) {
 	reader_init();
 	HINTERNET hInternet = InternetOpenW(NetAgentName(), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	if(hInternet == NULL) {
 		throw std::runtime_error("InternetOpenW failed");
 	}
-	HINTERNET hFile = InternetOpenUrlW(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_NO_CACHE_WRITE, 0);
+	HINTERNET hFile = InternetOpenUrlW(hInternet, url, NULL, 0, INTERNET_FLAG_NO_CACHE_WRITE, 0);
 	if(hFile == NULL) {
 		InternetCloseHandle(hInternet);
 		auto domain = get_domain_form_url(url);
@@ -88,6 +92,9 @@ bool yaml_reader::read_url(const std::wstring& url) {
 	InternetCloseHandle(hFile);
 	InternetCloseHandle(hInternet);
 	return full_download;
+}
+bool yaml_reader::read_url(const std::wstring& url) {
+	return read_url(url.c_str());
 }
 #endif
 

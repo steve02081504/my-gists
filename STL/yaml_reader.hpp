@@ -17,8 +17,10 @@ struct yaml_reader {
 
 	bool read_line(std::wstring line);
 	void reader_init();
+	void read_file(const wchar_t* file_path);
 	void read_file(const std::wstring& file_path);
 	#if defined(_WIN32)
+	bool read_url(const wchar_t* url);
 	bool read_url(const std::wstring& url);
 	#endif
 	yaml_map find(std::wstring key, std::wstring value);
