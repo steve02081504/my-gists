@@ -28,7 +28,7 @@ std::wstring GetSSPpath() {
 		}
 		CloseHandle(hFile);
 		//转换为wchar
-		std::wstring ssp_path_tmp_wstr = MultiByteToUnicode(ssp_path_tmp_str, CP_UTF8);
+		std::wstring ssp_path_tmp_wstr = CODEPAGE_n::MultiByteToUnicode(ssp_path_tmp_str, CODEPAGE_n::CP_UTF8);
 		return ssp_path_tmp_wstr;
 	}
 	{
