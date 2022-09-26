@@ -25,7 +25,8 @@ namespace CODEPAGE_n{
 	{
 		if ( Source && *Source ) {
 			if (int Len = ::WideCharToMultiByte(CodePage, Flags, Source, wcslen(Source), NULL, 0, NULL, NULL)) {
-				std::string str(Len, L'\0');
+				std::string str;
+				str.resize_and_overwrite(Len, [Len](auto,auto){return Len;});
 				if(Len = ::WideCharToMultiByte(CodePage, Flags, Source, wcslen(Source), str.data(), static_cast<int>(str.size()), NULL, NULL)) {
 					return str;
 				}
@@ -38,7 +39,8 @@ namespace CODEPAGE_n{
 	{
 		if ( Source && *Source ) {
 			if (int Len = ::MultiByteToWideChar(CodePage, Flags, Source, strlen(Source), NULL, 0)) {
-				std::wstring str(Len, L'\0');
+				std::wstring str;
+				str.resize_and_overwrite(Len, [Len](auto,auto){return Len;});
 				if(Len = ::MultiByteToWideChar(CodePage, Flags, Source, strlen(Source), str.data(), static_cast<int>(str.size()))) {
 					return str;
 				}
@@ -51,7 +53,8 @@ namespace CODEPAGE_n{
 	{
 		if ( Source.size() ) {
 			if (int Len = ::WideCharToMultiByte(CodePage, Flags, Source.c_str(), Source.size(), NULL, 0, NULL, NULL)) {
-				std::string str(Len, L'\0');
+				std::string str;
+				str.resize_and_overwrite(Len, [Len](auto,auto){return Len;});
 				if(Len = ::WideCharToMultiByte(CodePage, Flags, Source.c_str(), Source.size(), str.data(), static_cast<int>(str.size()), NULL, NULL)) {
 					return str;
 				}
@@ -64,7 +67,8 @@ namespace CODEPAGE_n{
 	{
 		if ( Source.size() ) {
 			if (int Len = ::MultiByteToWideChar(CodePage, Flags, Source.c_str(), Source.size(), NULL, 0)) {
-				std::wstring str(Len, L'\0');
+				std::wstring str;
+				str.resize_and_overwrite(Len, [Len](auto,auto){return Len;});
 				if(Len = ::MultiByteToWideChar(CodePage, Flags, Source.c_str(), Source.size(), str.data(), static_cast<int>(str.size()))) {
 					return str;
 				}
@@ -76,7 +80,8 @@ namespace CODEPAGE_n{
 	inline std::string UnicodeToMultiByte(const std::wstring_view &Source, unsigned int CodePage, DWORD Flags = 0) {
 		if(Source.size()) {
 			if(int Len = ::WideCharToMultiByte(CodePage, Flags, Source.data(), Source.size(), NULL, 0, NULL, NULL)) {
-				std::string str(Len, L'\0');
+				std::string str;
+				str.resize_and_overwrite(Len, [Len](auto,auto){return Len;});
 				if(Len = ::WideCharToMultiByte(CodePage, Flags, Source.data(), Source.size(), str.data(), static_cast<int>(str.size()), NULL, NULL)) {
 					return str;
 				}
@@ -88,7 +93,8 @@ namespace CODEPAGE_n{
 	inline std::wstring MultiByteToUnicode(const std::string_view &Source, unsigned int CodePage, DWORD Flags = 0) {
 		if(Source.size()) {
 			if(int Len = ::MultiByteToWideChar(CodePage, Flags, Source.data(), Source.size(), NULL, 0)) {
-				std::wstring str(Len, L'\0');
+				std::wstring str;
+				str.resize_and_overwrite(Len, [Len](auto,auto){return Len;});
 				if(Len = ::MultiByteToWideChar(CodePage, Flags, Source.data(), Source.size(), str.data(), static_cast<int>(str.size()))) {
 					return str;
 				}
