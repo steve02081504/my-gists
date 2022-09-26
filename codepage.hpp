@@ -25,9 +25,9 @@ namespace CODEPAGE_n{
 	{
 		if ( Source && *Source ) {
 			if (int Len = ::WideCharToMultiByte(CodePage, Flags, Source, wcslen(Source), NULL, 0, NULL, NULL)) {
-				std::vector<char> Dest(Len);
-				if (Len = ::WideCharToMultiByte(CodePage, Flags, Source, wcslen(Source), &Dest[0], static_cast<int>(Dest.size()), NULL, NULL)) {
-					return std::string(Dest.begin(), Dest.begin() + Len);
+				std::string str(Len, L'\0');
+				if(Len = ::WideCharToMultiByte(CodePage, Flags, Source, wcslen(Source), str.data(), static_cast<int>(str.size()), NULL, NULL)) {
+					return str;
 				}
 			}
 		}
@@ -38,35 +38,35 @@ namespace CODEPAGE_n{
 	{
 		if ( Source && *Source ) {
 			if (int Len = ::MultiByteToWideChar(CodePage, Flags, Source, strlen(Source), NULL, 0)) {
-				std::vector<wchar_t> Dest(Len);
-				if (Len = ::MultiByteToWideChar(CodePage, Flags, Source, strlen(Source), &Dest[0], static_cast<int>(Dest.size()))) {
-					return std::wstring(Dest.begin(), Dest.begin() + Len);
+				std::wstring str(Len, L'\0');
+				if(Len = ::MultiByteToWideChar(CodePage, Flags, Source, strlen(Source), str.data(), static_cast<int>(str.size()))) {
+					return str;
 				}
 			}
 		}
 		return {};
 	}
 
-	inline std::string UnicodeToMultiByte(std::wstring Source, unsigned int CodePage, DWORD Flags=0)
+	inline std::string UnicodeToMultiByte(const std::wstring&Source, unsigned int CodePage, DWORD Flags=0)
 	{
 		if ( Source.size() ) {
 			if (int Len = ::WideCharToMultiByte(CodePage, Flags, Source.c_str(), Source.size(), NULL, 0, NULL, NULL)) {
-				std::vector<char> Dest(Len);
-				if (Len = ::WideCharToMultiByte(CodePage, Flags, Source.c_str(), Source.size(), &Dest[0], static_cast<int>(Dest.size()), NULL, NULL)) {
-					return std::string(Dest.begin(), Dest.begin() + Len);
+				std::string str(Len, L'\0');
+				if(Len = ::WideCharToMultiByte(CodePage, Flags, Source.c_str(), Source.size(), str.data(), static_cast<int>(str.size()), NULL, NULL)) {
+					return str;
 				}
 			}
 		}
 		return {};
 	}
 
-	inline std::wstring MultiByteToUnicode(std::string Source, unsigned int CodePage, DWORD Flags=0)
+	inline std::wstring MultiByteToUnicode(const std::string&Source, unsigned int CodePage, DWORD Flags=0)
 	{
 		if ( Source.size() ) {
 			if (int Len = ::MultiByteToWideChar(CodePage, Flags, Source.c_str(), Source.size(), NULL, 0)) {
-				std::vector<wchar_t> Dest(Len);
-				if (Len = ::MultiByteToWideChar(CodePage, Flags, Source.c_str(), Source.size(), &Dest[0], static_cast<int>(Dest.size()))) {
-					return std::wstring(Dest.begin(), Dest.begin() + Len);
+				std::wstring str(Len, L'\0');
+				if(Len = ::MultiByteToWideChar(CodePage, Flags, Source.c_str(), Source.size(), str.data(), static_cast<int>(str.size()))) {
+					return str;
 				}
 			}
 		}
