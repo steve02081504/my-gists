@@ -1,8 +1,7 @@
-﻿string EncodeBase64(string& str)
-{
+﻿std::string EncodeBase64(std::string& str) {
 	const char *table="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-	string encodedstr;
+	std::string encodedstr;
 
 	int rest=str.size()%3;
 	if(rest==1) str+='\0';	// ダミーデータ
@@ -34,9 +33,8 @@
 	return(encodedstr);
 }
 
-string DecodeBase64(const string& encodedstr)
-{
-	string str;
+std::string DecodeBase64(const std::string& encodedstr) {
+	std::string str;
 
 	unsigned int rest=0;
 
