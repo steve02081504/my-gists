@@ -29,11 +29,9 @@ struct SSP_Runner:EXE_Runner {
 	bool run_ghost(std::wstring name) {
 		return self(L"/G", name);
 	}
-	bool install_nar(std::wstring file_path) {
-		return self(L"/I", file_path);
-	}
-	bool install_nar_and_delete_source_if_succes(std::wstring file_path) {
-		return self(L"/I", file_path, L"/o", L"deletesource");
+	template<typename... Args>
+	bool install_nar(std::wstring file_path, Args&&... args) {
+		return self(L"/I", file_path, std::forward<Args>(args)...);
 	}
 	bool install_ssf(std::wstring file_path) {
 		return self(L"/S", file_path);
