@@ -176,5 +176,3 @@ bool CDirEnum::next(CDirEnumEntry &entry)
 
 	return true;
 }
-
-

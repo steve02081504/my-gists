@@ -17,5 +17,3 @@ bool SetIcon(HWND hWnd, LPCWSTR pszFileName) {
 		SetIcon(hWnd,hIcon);
 	return hIcon;
 }
-
-
