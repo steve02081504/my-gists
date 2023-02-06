@@ -8,13 +8,13 @@
 
 std::wstring string2wstring(std::string str) {
 	std::wstring result;
-	//»ñÈ¡»º³åÇø´óĞ¡£¬²¢ÉêÇë¿Õ¼ä£¬»º³åÇø´óĞ¡°´×Ö·û¼ÆËã
+	//è·å–ç¼“å†²åŒºå¤§å°ï¼Œå¹¶ç”³è¯·ç©ºé—´ï¼Œç¼“å†²åŒºå¤§å°æŒ‰å­—ç¬¦è®¡ç®—
 	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), NULL, 0);
 	WCHAR* buffer = new WCHAR[len + 1];
-	//¶à×Ö½Ú±àÂë×ª»»³É¿í×Ö½Ú±àÂë
+	//å¤šå­—èŠ‚ç¼–ç è½¬æ¢æˆå®½å­—èŠ‚ç¼–ç 
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), buffer, len);
-	buffer[len] = '\0';  //Ìí¼Ó×Ö·û´®½áÎ²
-	//É¾³ı»º³åÇø²¢·µ»ØÖµ
+	buffer[len] = '\0';  //æ·»åŠ å­—ç¬¦ä¸²ç»“å°¾
+	//åˆ é™¤ç¼“å†²åŒºå¹¶è¿”å›å€¼
 	result=buffer;
 	delete[] buffer;
 	return result;
@@ -58,7 +58,7 @@ int GetInternetIP(std::basic_string<wchar_t>& Inernet_ip) {
 	if (_wfopen_s(&fp, szTempFile, L"rb") != 0) {
 		return 0;
 	}
-	fseek(fp, 0, SEEK_END);	//“¾“•¶Œ‘å¬
+	fseek(fp, 0, SEEK_END);	//æ‘¼æ‘“æš¥å¯©æˆå½«
 	int ilength = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 	if (ilength > 0) {

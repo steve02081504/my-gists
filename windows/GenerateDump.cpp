@@ -1,4 +1,4 @@
-﻿#include "Windows.h"
+#include "Windows.h"
 #include "DbgHelp.h"
 
 void OnError(PEXCEPTION_POINTERS pExceptionPointers);

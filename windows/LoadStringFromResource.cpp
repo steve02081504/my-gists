@@ -1,4 +1,4 @@
-﻿#include "LoadStringFromResource.hpp"
+#include "LoadStringFromResource.hpp"
 #include <windows.h>
 
 const wchar_t *LoadCStringFromResource(

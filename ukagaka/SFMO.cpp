@@ -1,4 +1,4 @@
-﻿#include "SFMO.hpp"
+#include "SFMO.hpp"
 #include "../codepage.hpp"
 
 bool SFMO_t::Update_info() {

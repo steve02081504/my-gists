@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <wtypes.h>
 #include <string>
 const wchar_t *LoadCStringFromResource(
