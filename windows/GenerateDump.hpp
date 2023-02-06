@@ -1,1 +1,1 @@
-﻿void InstallExceptionFilter();
+void InstallExceptionFilter();

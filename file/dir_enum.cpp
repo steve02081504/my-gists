@@ -1,4 +1,4 @@
-﻿// 
+// 
 // AYA version 5
 //
 // ディレクトリ内列挙　CDirEnum

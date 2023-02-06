@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "WaitForXObjectWithMessageLoop.hpp"
 #include <windows.h>
 

@@ -1,4 +1,4 @@
-﻿//copy from https://github.com/ponapalt/csaori
+//copy from https://github.com/ponapalt/csaori
 //
 #pragma once
 #include <vector>
