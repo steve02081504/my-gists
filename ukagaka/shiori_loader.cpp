@@ -76,6 +76,7 @@ void Cshiori::Doreload(){
 	SetTo(filename.c_str());
 }
 bool Cshiori::Dounload(){
+	if(!dll)return true;//?
 	const bool aret=call_unload();
 	unload=NULL;
 	if(dll)
