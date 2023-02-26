@@ -9,8 +9,14 @@ bool Cshiori::All_OK(){return dll&&load&&unload&&loadok&&request;}
 
 void Cshiori::init_methods(){
 	load=(load_type)GetProcAddress(dll,"load");
+	if(!load)
+		call_error_logger("Necessary interface \"load\" not found");
 	unload=(unload_type)GetProcAddress(dll,"unload");
+	if(!unload)
+		call_error_logger("Necessary interface \"unload\" not found");
 	request=(request_type)GetProcAddress(dll,"request");
+	if(!request)
+		call_error_logger("Necessary interface \"request\" not found");
 	checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
 	logsender=(logsender_type)GetProcAddress(dll,"logsend");
 }
@@ -18,19 +24,34 @@ void Cshiori::call_load(LPCWSTR pszFileName){
 	loadok=1;
 	auto a=string2HGLOBAL(GetFilename_sPath(pszFileName));
 	loadok=load(a.p,a.size);
-	if(!loadok)
+	if(!loadok) {
+		call_error_logger("Failed to load, proceed to unload...");
 		Dounload();
+	}
 }
-void Cshiori::call_unload(){
-	if(unload&&loadok)
-		unload();//no body fucking cares returns
+bool Cshiori::call_unload(){
+	if(!unload)
+		call_error_logger("Skip the unload call as it was not found");
+	else if(!loadok)
+		call_error_logger("Skip the unload call as load returns failure");
+	else{
+		const auto aret = unload();
+		if(!aret)
+			call_error_logger("unload returns failure");
+		return aret;
+	}
+	return false;
 }
-Cshiori::Cshiori(){}
+Cshiori::Cshiori(error_logger_type error_logger_p) {
+	error_logger = error_logger_p;
+}
 void Cshiori::SetTo(LPCWSTR pszFileName){
 	if(dll)
 		Dounload();
 	filename=pszFileName;
 	dll=LoadLibraryW(pszFileName);
+	if(!dll)
+		call_error_logger("dll file loading failure");
 	init_methods();
 	if(All_OK()){
 		if(loghandler)
@@ -42,7 +63,7 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 	else
 		Dounload();
 }
-Cshiori::Cshiori(LPCWSTR pszFileName){
+Cshiori::Cshiori(LPCWSTR pszFileName,error_logger_type error_logger_p):Cshiori(error_logger_p){
 	SetTo(pszFileName);
 }
 Cshiori::~Cshiori(){
@@ -52,12 +73,13 @@ void Cshiori::Doreload(){
 	Dounload();
 	SetTo(filename.c_str());
 }
-void Cshiori::Dounload(){
-	call_unload();
+bool Cshiori::Dounload(){
+	const bool aret=call_unload();
 	unload=NULL;
 	if(dll)
 		FreeLibrary(dll);
 	dll=NULL;
+	return aret;
 }
 using namespace CODEPAGE_n;
 void Cshiori::SetCodePage(std::wstring a){

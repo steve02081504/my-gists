@@ -21,6 +21,10 @@ class Cshiori {
 	typedef bool __cdecl logsender_t(long hwnd);
 	typedef logsender_t* logsender_type;
 
+	//error_logger
+	typedef void __cdecl error_logger_t(const char*str);
+	typedef error_logger_t* error_logger_type;
+
 	std::wstring filename;
 	load_type load=NULL;
 	unload_type unload=NULL;
@@ -31,19 +35,25 @@ class Cshiori {
 	void (*loghandler)(const wchar_t *str, int mode, int id)=NULL;
 	CODEPAGE_n::CODEPAGE cp=CODEPAGE_n::CP_UTF8;
 	bool loadok=1,set_logsend_ok=1;
+	error_logger_type error_logger=NULL;
+
+	void call_error_logger(const char*str) {
+		if (error_logger)
+			error_logger(str);
+	}
 
 	void init_methods();
 	void call_load(LPCWSTR pszFileName);
-	void call_unload();
+	bool call_unload();
 	bool set_logsend(HWND hwnd);
 public:
 	bool All_OK();
-	Cshiori();
+	Cshiori(error_logger_type error_logger_p = NULL);
 	void SetTo(LPCWSTR pszFileName);
-	Cshiori(LPCWSTR pszFileName);
+	Cshiori(LPCWSTR pszFileName, error_logger_type error_logger_p = NULL);
 	~Cshiori();
 	void Doreload();
-	void Dounload();
+	bool Dounload();
 	void SetCodePage(std::wstring);
 	void SetCodePage(CODEPAGE_n::CODEPAGE);
 	std::string operator()(std::string);
