@@ -54,7 +54,8 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 	dll=LoadLibraryW(pszFileName);
 	if(!dll)
 		call_error_logger(CshioriError::dll_file_load_failed);
-	init_methods();
+	else
+		init_methods();
 	if(All_OK()){
 		if(loghandler)
 			Set_loghandler(loghandler);
