@@ -4,19 +4,21 @@
 #include "shiori_loader.hpp"
 #include "../file/GetFilename_sPath.hpp"
 #include "../codepage.cpp"
+#include "../ansi_color.hpp"
 
 bool Cshiori::All_OK(){return dll&&load&&unload&&loadok&&request;}
 
 void Cshiori::init_methods(){
 	load=(load_type)GetProcAddress(dll,"load");
 	if(!load)
-		call_error_logger("Necessary interface \"load\" not found");
+		call_error_logger(CshioriError::interface_load_not_found);
 	unload=(unload_type)GetProcAddress(dll,"unload");
 	if(!unload)
-		call_error_logger("Necessary interface \"unload\" not found");
+		call_error_logger(CshioriError::interface_unload_not_found);
 	request=(request_type)GetProcAddress(dll,"request");
 	if(!request)
-		call_error_logger("Necessary interface \"request\" not found");
+		call_error_logger(CshioriError::interface_request_not_found);
+
 	checker=(CI_check_type)GetProcAddress(dll,"CI_check_failed");
 	logsender=(logsender_type)GetProcAddress(dll,"logsend");
 }
@@ -25,19 +27,19 @@ void Cshiori::call_load(LPCWSTR pszFileName){
 	auto a=string2HGLOBAL(GetFilename_sPath(pszFileName));
 	loadok=load(a.p,a.size);
 	if(!loadok) {
-		call_error_logger("Failed to load, proceed to unload...");
+		call_error_logger(CshioriError::interface_load_failed);
 		Dounload();
 	}
 }
 bool Cshiori::call_unload(){
 	if(!unload)
-		call_error_logger("Skip the unload call as it was not found");
+		call_error_logger(CshioriError::skip_unload_call_because_interface_unload_not_found);
 	else if(!loadok)
-		call_error_logger("Skip the unload call as load returns failure");
+		call_error_logger(CshioriError::skip_unload_call_because_load_failed);
 	else{
 		const auto aret = unload();
 		if(!aret)
-			call_error_logger("unload returns failure");
+			call_error_logger(CshioriError::interface_unload_failed);
 		return aret;
 	}
 	return false;
@@ -51,7 +53,7 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 	filename=pszFileName;
 	dll=LoadLibraryW(pszFileName);
 	if(!dll)
-		call_error_logger("dll file loading failure");
+		call_error_logger(CshioriError::dll_file_load_failed);
 	init_methods();
 	if(All_OK()){
 		if(loghandler)
@@ -135,4 +137,50 @@ void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode, 
 	auto Setter=(Set_loghandler_type)GetProcAddress(dll,"Set_loghandler");
 	if(Setter)
 		Setter(loghandler);
+}
+
+std::string_view to_string(CshioriError err) {
+	switch(err) {
+	case CshioriError::interface_load_not_found:
+		return "Necessary interface \"load\" not found";
+	case CshioriError::interface_unload_not_found:
+		return "Necessary interface \"unload\" not found";
+	case CshioriError::interface_request_not_found:
+		return "Necessary interface \"request\" not found";
+	case CshioriError::interface_load_failed:
+		return "Failed to load, unloading file...";
+	case CshioriError::interface_unload_failed:
+		return "unload returns failure";
+	case CshioriError::dll_file_load_failed:
+		return "dll file loading failure";
+	case CshioriError::skip_unload_call_because_load_failed:
+		return "Skip the unload call as load returns failure";
+	case CshioriError::skip_unload_call_because_interface_unload_not_found:
+		return "Skip the unload call as it was not found";
+	default:
+		return "Something fucked up.";
+	}
+}
+
+std::string_view to_ansi_colored_string(CshioriError err) {
+	switch(err) {
+	case CshioriError::interface_load_not_found:
+		return SET_RED "Necessary interface \"" SET_GREEN "load" SET_RED "\" not found";
+	case CshioriError::interface_unload_not_found:
+		return SET_RED "Necessary interface \"" SET_GREEN "unload" SET_RED "\" not found";
+	case CshioriError::interface_request_not_found:
+		return SET_RED "Necessary interface \"" SET_GREEN "request" SET_RED "\" not found";
+	case CshioriError::interface_load_failed:
+		return SET_RED "Failed to " SET_GREEN "load" SET_RED ", unloading file...";
+	case CshioriError::interface_unload_failed:
+		return SET_GREEN "unload" SET_RED " returns failure";
+	case CshioriError::dll_file_load_failed:
+		return SET_RED "dll file loading failure";
+	case CshioriError::skip_unload_call_because_load_failed:
+		return SET_RED "Skip the " SET_GREEN "unload" SET_RED " call as " SET_GREEN "load" SET_RED " returns failure";
+	case CshioriError::skip_unload_call_because_interface_unload_not_found:
+		return SET_RED "Skip the " SET_GREEN "unload" SET_RED " call as it was not found";
+	default:
+		return SET_RED "Something fucked up.";
+	}
 }

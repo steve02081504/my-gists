@@ -3,6 +3,21 @@
 #include "string2HGLOBAL.hpp"
 #include "../file/GetFilename_sPath.hpp"
 #include "../codepage.hpp"
+enum class CshioriError {
+	interface_load_not_found,
+	interface_unload_not_found,
+	interface_request_not_found,
+
+	interface_load_failed,
+	interface_unload_failed,
+
+	dll_file_load_failed,
+
+	skip_unload_call_because_load_failed,
+	skip_unload_call_because_interface_unload_not_found,
+};
+std::string_view to_string(CshioriError err);
+std::string_view to_ansi_colored_string(CshioriError err);
 class Cshiori {
 	HINSTANCE dll = NULL;
 
@@ -22,7 +37,7 @@ class Cshiori {
 	typedef logsender_t* logsender_type;
 
 	//error_logger
-	typedef void __cdecl error_logger_t(const char*str);
+	typedef void __cdecl error_logger_t(CshioriError);
 	typedef error_logger_t* error_logger_type;
 
 	std::wstring filename;
@@ -37,9 +52,9 @@ class Cshiori {
 	bool loadok=1,set_logsend_ok=1;
 	error_logger_type error_logger=NULL;
 
-	void call_error_logger(const char*str) {
+	void call_error_logger(CshioriError err) {
 		if (error_logger)
-			error_logger(str);
+			error_logger(err);
 	}
 
 	void init_methods();
