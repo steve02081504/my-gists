@@ -32,7 +32,7 @@ public:
 		dll_file_load_failed,
 
 		skip_unload_call_because_load_failed,
-		skip_unload_call_because_interface_unload_not_found,
+		skip_unload_call_because_unload_not_found,
 	};
 	enum class Warning {
 		interface_CI_check_not_found,

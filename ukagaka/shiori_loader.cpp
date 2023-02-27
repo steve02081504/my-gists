@@ -38,7 +38,7 @@ bool Cshiori::call_unload(){
 	if(!loadok)
 		error_logger(Error::skip_unload_call_because_load_failed);
 	else if(!unload)
-		error_logger(Error::skip_unload_call_because_interface_unload_not_found);
+		error_logger(Error::skip_unload_call_because_unload_not_found);
 	else{
 		const auto aret = unload();
 		if(!aret)
@@ -165,7 +165,7 @@ std::string_view to_string(Cshiori::Error err) {
 		return "dll file loading failure";
 	case skip_unload_call_because_load_failed:
 		return "Skip the unload call as load failed";
-	case skip_unload_call_because_interface_unload_not_found:
+	case skip_unload_call_because_unload_not_found:
 		return "Skip the unload call as it was not found";
 	default:
 		return "Something fucked up.";
@@ -189,7 +189,7 @@ std::string_view to_ansi_colored_string(Cshiori::Error err) {
 		return SET_RED "dll file loading failure" RESET_COLOR;
 	case skip_unload_call_because_load_failed:
 		return SET_RED "Skip the " SET_GREEN "unload" SET_RED " call as " SET_GREEN "load" SET_RED " failed" RESET_COLOR;
-	case skip_unload_call_because_interface_unload_not_found:
+	case skip_unload_call_because_unload_not_found:
 		return SET_RED "Skip the " SET_GREEN "unload" SET_RED " call as it was not found" RESET_COLOR;
 	default:
 		return SET_RED "Something fucked up." RESET_COLOR;
