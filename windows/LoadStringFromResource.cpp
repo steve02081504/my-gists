@@ -1,6 +1,7 @@
 #include "LoadStringFromResource.hpp"
 #include <windows.h>
 
+#if defined(RESOURCE_STRINGS_ARE_NULL_TERMINATED)
 const wchar_t *LoadCStringFromResource(
 	__in UINT		   stringID,
 	__in_opt HINSTANCE instance) {
@@ -16,6 +17,7 @@ const wchar_t *LoadCStringFromResource(
 	else
 		return L"";
 }
+#endif
 std::wstring LoadStringFromResource(
 	__in UINT		   stringID,
 	__in_opt HINSTANCE instance) {
@@ -27,7 +29,11 @@ std::wstring LoadStringFromResource(
 		reinterpret_cast<LPWSTR>(&pBuf), 0);
 
 	if(len)
-		return std::wstring(pBuf, pBuf + len);
+		return std::wstring(pBuf, pBuf + len
+		#if defined(RESOURCE_STRINGS_ARE_NULL_TERMINATED)
+			-1//exclude null terminator
+		#endif
+		);
 	else
 		return L"";
 }
