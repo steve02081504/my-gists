@@ -77,6 +77,7 @@ private:
 	void call_load(LPCWSTR pszFileName);
 	bool call_unload();
 	bool set_logsend(HWND hwnd);
+	bool methods_All_OK();
 public:
 	bool All_OK();
 	Cshiori(error_logger_type error_logger = {});

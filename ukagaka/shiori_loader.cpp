@@ -6,7 +6,8 @@
 #include "../codepage.cpp"
 #include "../ansi_color.hpp"
 
-bool Cshiori::All_OK(){return dll&&load&&unload&&loadok&&request;}
+bool Cshiori::All_OK() { return methods_All_OK() && loadok; }
+bool Cshiori::methods_All_OK() { return dll && load && unload && request; }
 
 void Cshiori::init_methods(){
 	load=(load_type)GetProcAddress(dll,"load");
@@ -60,7 +61,7 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 		error_logger(Error::dll_file_load_failed);
 	else
 		init_methods();
-	if(All_OK()){
+	if(methods_All_OK()) {
 		if(loghandler)
 			Set_loghandler(loghandler);
 		if(hwnd_for_logsender) {
