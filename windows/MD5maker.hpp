@@ -11,6 +11,14 @@ class MD5maker_t
 		ULONG buf[4];
 		BYTE input[64];
 		BYTE digest[16];
+
+		std::string to_string() {
+			char szBuffer[33] = {0};
+			for(size_t i = 0; i < 16; i++) {
+				sprintf(szBuffer + i * 2, "%02x", digest[i]);
+			}
+			return std::string().assign(szBuffer);
+		}
 	};
 	typedef void (WINAPI *MD5_INIT)(MD5_CTX*);
 	typedef void (WINAPI *MD5_UPDATE)(MD5_CTX*,const void*,unsigned int);
@@ -45,19 +53,16 @@ public:
 			mModule = NULL;
 		}
 	}
-	std::string get_str_md5(const std::string& str)
+	MD5_CTX get_str_md5(const std::string& str)
 	{
-		std::string str_md5;
 		MD5_CTX ctx = { 0 };
 		mInit(&ctx);
 		mUpdate(&ctx, str.c_str(), str.length());
 		mFinal(&ctx);
-		str_md5 = to_string(&ctx);
-		return str_md5;
+		return ctx;
 	}
-	std::string get_file_md5(const std::wstring& filename)
+	MD5_CTX get_file_md5(const std::wstring& filename)
 	{
-		std::string str_md5;
 		MD5_CTX ctx = { 0 };
 		auto fp=_wfopen(filename.c_str(),L"rb");
 		if (fp)
@@ -68,14 +73,12 @@ public:
 			while (c=fread(data,1,1024,fp))
 				mUpdate(&ctx, data, (UINT)c);
 			mFinal(&ctx);
-			str_md5 = to_string(&ctx);
 			fclose(fp);
 		}
-		return str_md5;
+		return ctx;
 	}
-	std::string get_file_md5(const std::string& filename)
+	MD5_CTX get_file_md5(const std::string& filename)
 	{
-		std::string str_md5;
 		MD5_CTX ctx = { 0 };
 		auto fp=fopen(filename.c_str(),"rb");
 		if (fp)
@@ -86,30 +89,17 @@ public:
 			while (c=fread(data,1,1024,fp))
 				mUpdate(&ctx, data, (UINT)c);
 			mFinal(&ctx);
-			str_md5 = to_string(&ctx);
 			fclose(fp);
 		}
-		return str_md5;
+		return ctx;
 	}
-	std::string get_buffer_md5(void* buffer, ULONG len)
+	MD5_CTX get_buffer_md5(void* buffer, ULONG len)
 	{
-		std::string str_md5;
 		MD5_CTX ctx = { 0 };
 		mInit(&ctx);
 		mUpdate(&ctx, buffer, len);
 		mFinal(&ctx);
-		str_md5 = to_string(&ctx);
-		return str_md5;
-	}
-private:
-	std::string to_string(MD5_CTX* ctx)
-	{
-		char szBuffer[33] = { 0 };
-		for (size_t i = 0; i < 16; i++)
-		{
-			sprintf(szBuffer + i * 2,"%02x", ctx->digest[i]);
-		}
-		return std::string().assign(szBuffer);
+		return ctx;
 	}
 private:
 	MD5_INIT mInit;
