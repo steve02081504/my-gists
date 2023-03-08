@@ -1,3 +1,4 @@
+#pragma once
 #include <windows.h>
 
 static const auto hOut=GetStdHandle(STD_OUTPUT_HANDLE);
