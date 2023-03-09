@@ -23,32 +23,39 @@ namespace Socket_link_n{
 		~WSA_t(){uninit();}
 	}WSA{};
 
-	struct Socket_link_t{
+	class Socket_link_t{
 		SOCKET _clientSocket;
 		SOCKADDR_IN _srvAddr;
 
-		Socket_link_t(std::string addr,unsigned int port){
-			WSA.init();
+		void link() {
+			//连接服务器
+			if(connect(_clientSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)))
+				throw(std::runtime_error) "connect(_clientSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)) execute failed!";
+		}
+		void init_socket() {
 			_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 			if (_clientSocket == INVALID_SOCKET)
 				throw (std::runtime_error)"_clientSocket = socket(AF_INET, SOCK_STREAM, 0) execute failed!";
+		}
+	public:
+		static constexpr struct not_link_t {} not_link{};
+
+		Socket_link_t(std::string addr,unsigned int port,not_link_t){
+			WSA.init();
+			init_socket();
 			//初始化服务器端地址族变量
 			
 			_srvAddr.sin_addr.S_un.S_addr = inet_addr(addr.c_str());
 			_srvAddr.sin_family = AF_INET;
 			_srvAddr.sin_port = htons(port);
-
-			//连接服务器
-			if (connect(_clientSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)))
-				throw (std::runtime_error)"connect(_clientSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)) execute failed!";
+		}
+		Socket_link_t(std::string addr, unsigned int port) :Socket_link_t(addr, port, not_link) {
+			link();
 		}
 		void relink(){
 			closesocket(_clientSocket);
-			_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-			if (_clientSocket == INVALID_SOCKET)
-				throw (std::runtime_error)"_clientSocket = socket(AF_INET, SOCK_STREAM, 0) execute failed!";
-			if (connect(_clientSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)))
-				throw (std::runtime_error)"connect(_clientSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)) execute failed!";
+			init_socket();
+			link();
 		}
 		Socket_link_t(SOCKET clientSocket){
 			_clientSocket = clientSocket;
@@ -72,7 +79,7 @@ namespace Socket_link_n{
 			char recvBuf[513];
 			while(1){
 				auto a= ::recv(_clientSocket, recvBuf, 512, 0);
-				if (a == EAGAIN || a == 0)
+				if (a == EAGAIN || a == 0 || a==-1)
 					break;
 				else{
 					recvBuf[512]=0;

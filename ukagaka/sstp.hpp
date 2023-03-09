@@ -98,7 +98,7 @@ namespace SSTP_link_n{
 
 		bool Socket_link(std::string addr = "127.0.0.1", unsigned int port = 9821) {
 			delete pSocket;
-			try{pSocket = new Socket_link_t(addr, port);}
+			try{pSocket = new Socket_link_t(addr, port, Socket_link_t::not_link);}
 			catch (...) { return 0; }
 			return 1;
 		}
