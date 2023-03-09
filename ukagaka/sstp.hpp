@@ -205,7 +205,7 @@ namespace SSTP_link_n{
 		_header(header){}
 
 		std::wstring get_SSTP_head(std::wstring SSTP_type){
-			return base_link_t::get_SSTP_head(SSTP_type) + L"\r\n" + _header;
+			return base_link_t::get_SSTP_head(SSTP_type) + _header;
 		}
 		std::wstring base_SSTP_send(std::wstring head,SSTP_link_args_t args){
 			base_link_t::before_SSTP_send();
