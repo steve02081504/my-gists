@@ -41,7 +41,7 @@ namespace updatefile_n{
 		}
 		explicit update_file_info(wstring file,wstring filename) {
 			name = filename;
-			md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file),CODEPAGE_n::CP_ACP);
+			md5	 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file).to_string(), CODEPAGE_n::CP_ACP);
 			size = GetFileSize(file.c_str());
 			time = time2str(FILETIME2time_t(LastWriteTime(file.c_str())));
 		}
@@ -58,13 +58,13 @@ namespace updatefile_n{
 			if (time != ttime) {
 				time = ttime;
 				name = filename;
-				md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file), CODEPAGE_n::CP_ACP);
+				md5  = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file).to_string(), CODEPAGE_n::CP_ACP);
 				size = GetFileSize(file.c_str());
 			}
 		}
 		void update_with_out_time(wstring file, wstring filename) {
 			name = filename;
-			md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file), CODEPAGE_n::CP_ACP);
+			md5 = CODEPAGE_n::MultiByteToUnicode(MD5maker.get_file_md5(file).to_string(), CODEPAGE_n::CP_ACP);
 			size = GetFileSize(file.c_str());
 		}
 	};
