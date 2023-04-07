@@ -2,88 +2,27 @@
 #ifndef DONT_USE_SOCKET
 #include "../socket.hpp"
 #endif		 // !DONT_USE_SOCKET
-#include "../codepage.hpp"
-#include <map>
+#include "protocol_message.hpp"
 #include <time.h>
 
 namespace SSTP_link_n{
-	using namespace CODEPAGE_n;
+	using namespace ukagaka;
 	#ifndef DONT_USE_SOCKET
 	using namespace Socket_link_n;
 	#endif		 // !DONT_USE_SOCKET
-	struct SSTP_link_arg_parts_t{
-		std::wstring _name;
-		std::wstring _var;
-	};
-	struct SSTP_link_args_t{
-		std::map<std::wstring,std::wstring>_m;
-		SSTP_link_args_t(std::initializer_list<SSTP_link_arg_parts_t>a){
-			for (auto&x:a) {
-				_m[x._name]=x._var;
-			}
-		}
-		explicit SSTP_link_args_t(std::wstring a){
-			if(a.find(L":") > a.find(L"\r\n"))
-				a.erase(0,a.find(L"\r\n"));
-			while(!a.empty()){
-				std::wstring t=a.substr(0,a.find(L"\r\n"));
-				if (t.find(L": ")!=t.npos){
-					_m[t.substr(0,t.find(L": "))]=t.substr(t.find(L": ")+2);
-					a.erase(0,a.find(L"\r\n")+2);
-					while (!a.substr(0,a.find(L"\r\n")).find(L": ")){
-						_m[t.substr(0,t.find(L": "))]+=L"\r\n"+a.substr(0,a.find(L"\r\n"));
-						a.erase(0,a.find(L"\r\n")+2);
-					}
-				}else{
-					a.erase(0,a.find(L"\r\n")+2);
-				}
-			}
-		}
-		template<class T>
-		explicit SSTP_link_args_t(T&&a):SSTP_link_args_t(std::wstring(a)){}
-		explicit operator std::wstring(){
-			std::wstring aret;
-			for (auto&x:_m) {
-				aret += x.first + L": " + x.second + L"\r\n";
-			}
-			return aret;
-		}
-		auto var(){return _m[L"Script"];}
-		bool has(std::wstring a){return _m.count(L"X-SSTP-PassThru-"+a);}
-		auto operator[](std::wstring a){return _m[L"X-SSTP-PassThru-"+a];}
-		std::map<std::wstring,std::wstring>& get_str_map(){return _m;}
+	struct SSTP_link_args_t: base_protocol_message {
+		using base_protocol_message::base_protocol_message;
+		bool has(std::wstring a){return base_protocol_message::has(L"X-SSTP-PassThru-"+a);}
+		auto&operator[](std::wstring a){return base_protocol_message::operator[](L"X-SSTP-PassThru-"+a);}
+		auto& base_arec(std::wstring a){return base_protocol_message::operator[](a);}
 	};
 
-	template<class T>
-	auto operator+(T&&a,SSTP_link_args_t&b) {return std::wstring(a)+std::wstring(b);}
-
-	struct SSTP_ret_t{
-		std::wstring _m;
-		SSTP_link_args_t __m;
-		SSTP_ret_t():__m({}){}
-		SSTP_ret_t(std::wstring a):_m(a),__m(_m){}
-		operator std::wstring(){return _m;}
-		explicit operator SSTP_link_args_t(){return __m;}
-		auto to_str(){return _m;}
-		auto to_map(){return operator SSTP_link_args_t();}
-		auto operator[](std::wstring a){return __m[a];}
-		auto get_head(){return _m.substr(_m.find(L"SSTP/"),_m.find(L"\r\n"));}
-		auto get_code(){
-			auto code_flag = _m.find(L"SSTP/");
-			if(code_flag == std::wstring::npos)
-				return (long long)-1;
-			else
-				return std::wcstoll(_m.substr(code_flag+9,code_flag+12).c_str(),NULL,10);
-		}
-		auto var(){return __m.var();}
-		bool has(std::wstring a){return __m.has(a);}
-		auto& to_str_map(){return __m.get_str_map();}
+	struct SSTP_ret_t: protocol_message {
+		using protocol_message::protocol_message;
+		bool  has(std::wstring a) { return base_protocol_message::has(L"X-SSTP-PassThru-" + a); }
+		auto& operator[](std::wstring a) { return base_protocol_message::operator[](L"X-SSTP-PassThru-" + a); }
+		auto& base_arec(std::wstring a) { return base_protocol_message::operator[](a); }
 	};
-
-	template<class T>
-	auto&&operator<<(T&&a,SSTP_ret_t&b) {return a<<b.to_str();}
-	template<class T>
-	auto operator+(T&&a,SSTP_ret_t&b) {return a+b.to_str();}
 
 	#define dwDataOfDirectSSTP 9801
 
@@ -104,19 +43,19 @@ namespace SSTP_link_n{
 		}
 		bool link_to_ghost(HWND ghost) {
 			if(ghost){
-				_header._m[L"ReceiverGhostHWnd"] = std::to_wstring((size_t)ghost);
+				_header.base_arec(L"ReceiverGhostHWnd") = std::to_wstring((size_t)ghost);
 			}
 			else {
-				_header._m.erase(L"ReceiverGhostHWnd");
+				_header.erase(L"ReceiverGhostHWnd");
 			}
 			return ghost;
 		}
 		bool link_to_ghost(std::wstring ghost) {
 			if (!ghost.empty()) {
-				_header._m[L"ReceiverGhostName"] = ghost;
+				_header.base_arec(L"ReceiverGhostName") = ghost;
 			}
 			else {
-				_header._m.erase(L"ReceiverGhostName");
+				_header.erase(L"ReceiverGhostName");
 			}
 			return !ghost.empty();
 		}
@@ -207,26 +146,13 @@ namespace SSTP_link_n{
 		std::wstring get_SSTP_head(std::wstring SSTP_type){
 			return base_link_t::get_SSTP_head(SSTP_type) + _header;
 		}
-		std::wstring base_SSTP_send(std::wstring head,SSTP_link_args_t args){
+		SSTP_ret_t base_SSTP_send(std::wstring head,SSTP_link_args_t args){
 			base_link_t::before_SSTP_send();
 			{
-				auto send=get_SSTP_head(head)+args+L"\r\n";
-				auto charset=send;
-				charset=charset.substr(charset.find(L"\r\nCharset: ")+11);
-				charset=charset.substr(0,charset.find(L"\r\n"));
-				base_link_t::base_send(UnicodeToMultiByte(send, StringtoCodePage(charset.c_str())));
+				auto send=protocol_message{get_SSTP_head(head)+args};
+				base_link_t::base_send((std::string)send);
 			}
-			{
-				auto temp = base_link_t::base_get_ret();
-				if(temp.size()) {
-					auto charset = temp;
-					charset		 = charset.substr(charset.find("\r\nCharset: ") + 11);
-					charset		 = charset.substr(0, charset.find("\r\n"));
-					return MultiByteToUnicode(temp, StringtoCodePage(charset.c_str()));
-				}
-				else
-					return {};
-			}
+			return(SSTP_ret_t)base_link_t::base_get_ret();
 		}
 		SSTP_ret_t NOTYFY(SSTP_link_args_t args){
 			return base_SSTP_send(L"NOTIFY SSTP/1.1",args);

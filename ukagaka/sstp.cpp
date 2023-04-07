@@ -1,1 +1,1 @@
-//nothing here
+#include "protocol_message.cpp"
