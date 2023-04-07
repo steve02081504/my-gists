@@ -28,9 +28,12 @@ namespace SSTP_link_n{
 
 	#ifndef DONT_USE_SOCKET
 	struct SSTP_link_Socket_t {
+	private:
 		Socket_link_t*	 pSocket = nullptr;
 		SSTP_link_args_t _header{};
-
+	protected:
+		const auto& get_header()const { return _header; }
+	public:
 		~SSTP_link_Socket_t() {
 			delete pSocket;
 		}
@@ -71,9 +74,6 @@ namespace SSTP_link_n{
 			else
 				return pSocket->base_get_ret();
 		}
-		std::wstring get_SSTP_head(std::wstring SSTP_type){
-			return SSTP_type+L"\r\n"+_header;
-		}
 		void before_SSTP_send(){
 			if(pSocket)
 				pSocket->relink();//SSTP server can't process "keep-alive" style connection like HTTP: http://ssp.shillest.net/bts/view.php?id=170#c384
@@ -83,11 +83,14 @@ namespace SSTP_link_n{
 	};
 	#endif
 	struct SSTP_link_Direct_t {
+	private:
 		bool usingDirectSSTP=0;
 		HWND toghost=0;
 		HWND replay_to=0;
 		std::string aret;
-
+	protected:
+		SSTP_link_args_t get_header()const { return {}; }
+	public:
 		bool was_linked_to_ghost() {
 			return toghost;
 		}
@@ -121,9 +124,6 @@ namespace SSTP_link_n{
 					Sleep(250);
 			}
 		}
-		std::wstring get_SSTP_head(std::wstring SSTP_type){
-			return SSTP_type;
-		}
 		void before_SSTP_send(){
 			aret.clear();
 		}
@@ -136,20 +136,18 @@ namespace SSTP_link_n{
 	};
 	template<typename base_link_t>
 	struct SSTP_link_T:base_link_t{
+	private:
 		SSTP_link_args_t _header;
-
+	public:
 		SSTP_link_T(
 					SSTP_link_args_t header={{L"Charset",L"UTF-8"},{L"Sender",L"void"}}
 					):
 		_header(header){}
 
-		std::wstring get_SSTP_head(std::wstring SSTP_type){
-			return base_link_t::get_SSTP_head(SSTP_type) + _header;
-		}
 		SSTP_ret_t base_SSTP_send(std::wstring head,SSTP_link_args_t args){
 			base_link_t::before_SSTP_send();
 			{
-				auto send=protocol_message{get_SSTP_head(head)+args};
+				auto send=protocol_message{head,base_link_t::get_header()+_header+args};
 				base_link_t::base_send((std::string)send);
 			}
 			return(SSTP_ret_t)base_link_t::base_get_ret();

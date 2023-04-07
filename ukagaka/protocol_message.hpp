@@ -95,12 +95,22 @@ namespace ukagaka {
 				}
 			}
 		}
+		auto&operator+=(const base_protocol_message&a)&{
+			_params.insert(_params.end(),a._params.begin(),a._params.end());
+			return *this;
+		}
+		base_protocol_message operator+(const base_protocol_message&a)const&{
+			auto aret=*this;
+			aret+=a;
+			return aret;
+		}
+		base_protocol_message&&operator+(const base_protocol_message&a)&&{
+			return std::move(*this+=a);
+		}
 	};
 
 	template<class T>
-	inline auto operator+(T&&a,base_protocol_message&b) {return std::wstring(a)+std::wstring(b);}
-	template<class T>
-	auto&&operator<<(T&&a,base_protocol_message&b) {return a<<std::wstring(b);}
+	auto&&operator<<(T&&a,const base_protocol_message&b) {return a<<std::wstring(b);}
 	inline std::string to_string(const base_protocol_message&b) {return std::string(b);}
 	std::string to_ansi_colored_string(const base_protocol_message&b);
 	inline std::wstring to_wstring(const base_protocol_message&b) {return std::wstring(b);}
@@ -146,10 +156,20 @@ namespace ukagaka {
 			head = head.substr(0, head.find(L" "));
 			return std::wcstoll(head.c_str(),NULL,10);
 		}
+		auto&operator+=(const base_protocol_message&a)&{
+			base_protocol_message::operator+=(a);
+			return *this;
+		}
+		protocol_message operator+(const base_protocol_message&a)const&{
+			auto aret=*this;
+			aret+=a;
+			return aret;
+		}
+		protocol_message&&operator+(const base_protocol_message&a)&&{
+			return std::move(*this+=a);
+		}
 	};
 
-	template<class T>
-	inline auto operator+(T&&a,const protocol_message&b) {return std::wstring(a)+std::wstring(b);}
 	template<class T>
 	auto&&operator<<(T&&a,const protocol_message&b) {return a<<std::wstring(b);}
 	inline std::string to_string(const protocol_message&b) {return std::string(b);}
