@@ -50,6 +50,8 @@ public:
 	public:
 		error_logger_p error_logger = NULL;
 		warning_logger_p warning_logger = NULL;
+		error_logger_type() = default;
+		explicit error_logger_type(error_logger_p error_logger, warning_logger_p warning_logger=NULL) :error_logger(error_logger), warning_logger(warning_logger) {}
 		void operator()(Error err) {
 			if (error_logger)
 				error_logger(err);
