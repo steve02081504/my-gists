@@ -35,6 +35,7 @@ private:
 	//some private member
 private:
 	friend class terminal_runner;
+protected:
 	virtual void before_terminal_login(){}
 	virtual void terminal_args(size_t argc, std::vector<std::wstring>&argv){}
 	virtual void terminal_login(){}
@@ -99,6 +100,7 @@ public:
 
 class simple_terminal:public terminal{
 	std::vector<std::wstring>command_history;
+protected:
 	virtual bool terminal_run(const std::wstring&command)=0;
 	virtual void terminal_command_history_update(const std::wstring&command)override{
 		command_history.push_back(command);
