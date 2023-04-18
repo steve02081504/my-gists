@@ -6,6 +6,7 @@
 #define SET_PURPLE		 "\033[35m"
 #define SET_CYAN		 "\033[36m"
 #define SET_WHITE		 "\033[37m"
+#define SET_GRAY		 "\033[90m"
 #define RESET_COLOR		 "\033[0m"
 
 #define GREEN_TEXT(text)		SET_GREEN text RESET_COLOR
@@ -15,6 +16,7 @@
 #define BLUE_TEXT(text)			SET_BLUE text RESET_COLOR
 #define PURPLE_TEXT(text)		SET_PURPLE text RESET_COLOR
 #define CYAN_TEXT(text)			SET_CYAN text RESET_COLOR
+#define GRAY_TEXT(text)			SET_GRAY text RESET_COLOR
 #define WHITE_TEXT(text)		SET_WHITE text RESET_COLOR
 
 #define GREEN_OUTPUT(something)		   SET_GREEN << something << RESET_COLOR
@@ -24,4 +26,5 @@
 #define BLUE_OUTPUT(something)		   SET_BLUE << something << RESET_COLOR
 #define PURPLE_OUTPUT(something)	   SET_PURPLE << something << RESET_COLOR
 #define CYAN_OUTPUT(something)		   SET_CYAN << something << RESET_COLOR
+#define GRAY_OUTPUT(something)		   SET_GRAY << something << RESET_COLOR
 #define WHITE_OUTPUT(something)		   SET_WHITE << something << RESET_COLOR

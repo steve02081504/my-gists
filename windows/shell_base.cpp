@@ -71,6 +71,13 @@ class terminal_runner{
 public:
 	terminal_runner(terminal*pt):base(pt){}
 	void run(size_t argc, std::vector<std::wstring>& argv) {
+		DWORD old_mode;
+		if(base->enable_virtual_terminal_processing()){
+			HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+			GetConsoleMode(hOut, &old_mode);
+			DWORD dwMode = old_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+			SetConsoleMode(hOut, dwMode);
+		}
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE);
 		auto old_active_terminal=active_terminal;
 		active_terminal=base;
