@@ -9,7 +9,7 @@ bool EXE_Runner::Base_Run(std::wstring args) {
 }
 bool EXE_Runner::Base_RunAndWait(std::wstring args) {
 	//Execute the program and wait for it to finish
-	STARTUPINFO			si;
+	STARTUPINFOW		si;
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
