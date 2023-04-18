@@ -81,8 +81,6 @@ public:
 		const auto hOut=GetStdHandle(STD_OUTPUT_HANDLE);
 		CONSOLE_CURSOR_INFO CurSorInfo;
 		GetConsoleCursorInfo(hOut, &CurSorInfo);
-		CONSOLE_SCREEN_BUFFER_INFO BufferInfo;
-		GetConsoleScreenBufferInfo(hOut, &BufferInfo);
 
 		floop{
 			putstr(L">> ");
@@ -92,35 +90,32 @@ public:
 			editting_command_t command;
 			size_t tab_num=0;
 			size_t before_history_index=0;
-			//两个变量，保存命令开始和结束的位置，用于重绘
-			GetConsoleScreenBufferInfo(hOut, &BufferInfo);
-			COORD command_start_pos=BufferInfo.dwCursorPosition;
-			COORD command_end_pos=BufferInfo.dwCursorPosition;
+			
+			terminal::reprinter_t reprinter;
 			auto move_insert_index=[&](ptrdiff_t move_size){
-				GetConsoleScreenBufferInfo(hOut, &BufferInfo);
-				COORD move_pos=BufferInfo.dwCursorPosition;
+				COORD move_pos=reprinter.get_cursor_pos();
 				if(move_size>0){
 					if(command.insert_index+move_size>command.command.size()){
-						move_pos=command_end_pos;
+						move_pos=reprinter.get_end_pos();
 						command.insert_index=command.command.size();
 					}
 					else{
 						move_pos.X+=GetStrWide(command.command,command.insert_index,command.insert_index+move_size);
-						while(move_pos.X>=BufferInfo.dwSize.X){
-							move_pos.X-=BufferInfo.dwSize.X;
+						while(move_pos.X >= reprinter.get_buffer_width()) {
+							move_pos.X -= reprinter.get_buffer_width();
 							move_pos.Y++;
 						}
 						command.insert_index+=move_size;
 					}
 				}else{
 					if(command.insert_index+move_size<0){
-						move_pos=command_start_pos;
+						move_pos=reprinter.get_start_pos();
 						command.insert_index=0;
 					}
 					else{
 						move_pos.X-=GetStrWide(command.command,command.insert_index+move_size,command.insert_index);
 						while(move_pos.X<0){
-							move_pos.X+=BufferInfo.dwSize.X;
+							move_pos.X+=reprinter.get_buffer_width();
 							move_pos.Y--;
 						}
 						command.insert_index+=move_size;
@@ -129,25 +124,13 @@ public:
 				SetConsoleCursorPosition(hOut,move_pos);
 			};
 			auto reflash_command=[&](editting_command_t new_command){
-				//首先移动到命令开始的位置
-				SetConsoleCursorPosition(hOut,command_start_pos);
-				//输出新的命令
-				putstr(base->terminal_command_update(new_command.command));
-				//临时变量保存此时的光标位置
-				GetConsoleScreenBufferInfo(hOut, &BufferInfo);
-				COORD temp_pos=BufferInfo.dwCursorPosition;
-				if(temp_pos.Y<command_end_pos.Y || (temp_pos.Y==command_end_pos.Y && temp_pos.X<command_end_pos.X)){
-					//如果新的命令比原来的短，那么通过窗口大小和位置，计算出需要几个空格来覆盖原来的命令的尾
-					size_t space_num=(command_end_pos.Y-temp_pos.Y)*BufferInfo.dwSize.X+command_end_pos.X-temp_pos.X;
-					//输出空格
-					putchar_x_times(' ',space_num);
-				}
+				//重绘新的命令
+				reprinter(base->terminal_command_update(new_command.command));
 				//移动到命令开始的位置
-				SetConsoleCursorPosition(hOut,command_start_pos);
+				reprinter.move_to_start();
 				//更新变量
 				command=new_command;
 				command.insert_index=0;//现在光标在命令的最前面
-				command_end_pos=temp_pos;
 				//移动光标到正确的位置
 				move_insert_index(new_command.insert_index);
 			};
@@ -306,4 +289,28 @@ inline editting_command_t editting_command_t::erase_with_no_move(size_t erase_si
 	auto ret = *this;
 	std::move(ret).erase_with_no_move(erase_size);
 	return ret;
+}
+
+inline terminal::reprinter_t::reprinter_t() {
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	GetConsoleScreenBufferInfo(hOut, &BufferInfo);
+	start_pos = BufferInfo.dwCursorPosition;
+	end_pos	  = start_pos;
+}
+
+inline void terminal::reprinter_t::operator()(const std::wstring& str) {
+	//移动光标到选项开始位置
+	SetConsoleCursorPosition(hOut, start_pos);
+	//输出选项
+	putstr(str);
+	//临时变量保存此时的光标位置
+	auto temp_pos = get_cursor_pos();
+	if(temp_pos.Y < end_pos.Y || (temp_pos.Y == end_pos.Y && temp_pos.X < end_pos.X)) {
+		//如果新的命令比原来的短，那么通过窗口大小和位置，计算出需要几个空格来覆盖原来的命令的尾
+		size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X;
+		//输出空格
+		putchar_x_times(' ', space_num);
+	}
+	//更新结束位置
+	end_pos = temp_pos;
 }

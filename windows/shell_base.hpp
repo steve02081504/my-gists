@@ -1,5 +1,13 @@
 #include <string>
 #include <vector>
+#define NO_MIN_MAX
+#if defined(_WINSOCKAPI_)
+	#include <windows.h>
+#else
+	#define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
+	#include <windows.h>
+	#undef _WINSOCKAPI_
+#endif
 
 struct editting_command_t{
 	std::wstring command;
@@ -41,6 +49,32 @@ private:
 	virtual constexpr bool enable_virtual_terminal_processing(){return true;}
 private:
 	void base_main(size_t argc, std::vector<std::wstring>&argv);
+public:
+	class reprinter_t{
+		mutable CONSOLE_SCREEN_BUFFER_INFO BufferInfo;
+		//两个变量，保存选项开始和结束的位置，用于重绘
+		HANDLE hOut;
+		COORD start_pos,end_pos;
+	public:
+		reprinter_t();
+		void operator()(const std::wstring& str);
+		void move_to_start(){
+			SetConsoleCursorPosition(hOut, start_pos);
+		}
+		COORD get_start_pos()const{
+			return start_pos;
+		}
+		COORD get_end_pos()const{
+			return end_pos;
+		}
+		COORD get_cursor_pos()const{
+			GetConsoleScreenBufferInfo(hOut, &BufferInfo);
+			return BufferInfo.dwCursorPosition;
+		}
+		auto get_buffer_width()const{
+			return BufferInfo.dwSize.X;
+		}
+	};
 public:
 	void operator()(size_t argc, std::vector<std::wstring>& argv) {
 		base_main(argc, argv);
