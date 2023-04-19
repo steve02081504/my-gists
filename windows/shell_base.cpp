@@ -191,11 +191,13 @@ public:
 				case 0xE0:{//方向字符先导字符
 					switch(_getwch()){
 					case 72://up
+						base->terminal_command_history_update_last(command.command);
 						before_history_index++;
 						reflash_command(base->terminal_get_command_history(before_history_index));
 						break;
 					case 80://down
-						if(before_history_index){
+						if(before_history_index) {
+							base->terminal_command_history_update_last(command.command);
 							before_history_index--;
 							reflash_command(base->terminal_get_command_history(before_history_index));
 						}
@@ -227,12 +229,12 @@ public:
 				}
 				if(c==9)tab_num++;
 				else tab_num=0;
-				if(c!=25&&c!=26){
+				if(c!=25&&c!=26)
 					edit_history.update(command);
-					base->terminal_command_history_update_last(command.command);
-				}
 			}
 		run_command:
+			hideCursor();
+			base->terminal_command_history_update_last(command.command);
 			if(!base->terminal_run(command.command))
 				break;
 		}
