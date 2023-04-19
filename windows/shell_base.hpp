@@ -44,8 +44,8 @@ protected:
 	virtual bool terminal_run(const std::wstring&command)=0;
 	virtual void terminal_exit(){}
 	virtual std::wstring terminal_command_update(std::wstring command){return command;}
-	virtual void terminal_command_history_update(const std::wstring&command)=0;
-	virtual void terminal_command_history_update_last(const std::wstring&command)=0;
+	virtual void terminal_command_history_new()=0;
+	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)=0;
 	virtual std::wstring terminal_get_command_history(size_t before_num)=0;
 	virtual constexpr bool enable_virtual_terminal_processing(){return true;}
 private:
@@ -102,14 +102,11 @@ class simple_terminal:public terminal{
 	std::vector<std::wstring>command_history;
 protected:
 	virtual bool terminal_run(const std::wstring&command)=0;
-	virtual void terminal_command_history_update(const std::wstring&command)override{
-		command_history.push_back(command);
+	virtual void terminal_command_history_new()override{
+		command_history.push_back({});
 	}
-	virtual void terminal_command_history_update_last(const std::wstring&command)override{
-		if(command_history.empty())
-			command_history.push_back(command);
-		else
-			command_history.back()=command;
+	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)override{
+		command_history[command_history.size() - before_num - 1] = command;
 	}
 	virtual std::wstring terminal_get_command_history(size_t before_num)override{
 		if(before_num>=command_history.size())

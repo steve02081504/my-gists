@@ -88,11 +88,19 @@ public:
 		const auto hOut=GetStdHandle(STD_OUTPUT_HANDLE);
 		CONSOLE_CURSOR_INFO CurSorInfo;
 		GetConsoleCursorInfo(hOut, &CurSorInfo);
+		auto showCursor = [&]() {
+			CurSorInfo.bVisible = TRUE;
+			SetConsoleCursorInfo(hOut, &CurSorInfo);
+		};
+		auto hideCursor = [&]() {
+			CurSorInfo.bVisible = FALSE;
+			SetConsoleCursorInfo(hOut, &CurSorInfo);
+		};
 
 		floop{
 			putstr(L">> ");
 
-			base->terminal_command_history_update({});
+			base->terminal_command_history_new();
 			edit_history_t edit_history;
 			editting_command_t command;
 			size_t tab_num=0;
@@ -141,14 +149,6 @@ public:
 				//移动光标到正确的位置
 				move_insert_index(new_command.insert_index);
 			};
-			auto showCursor=[&](){
-				CurSorInfo.bVisible=TRUE;
-				SetConsoleCursorInfo(hOut, &CurSorInfo);
-			};
-			auto hideCursor=[&](){
-				CurSorInfo.bVisible=FALSE;
-				SetConsoleCursorInfo(hOut, &CurSorInfo);
-			};
 			floop{
 				showCursor();
 				auto c=_getwch();
@@ -191,13 +191,13 @@ public:
 				case 0xE0:{//方向字符先导字符
 					switch(_getwch()){
 					case 72://up
-						base->terminal_command_history_update_last(command.command);
+						base->terminal_command_history_update(command.command, before_history_index);
 						before_history_index++;
 						reflash_command(base->terminal_get_command_history(before_history_index));
 						break;
 					case 80://down
 						if(before_history_index) {
-							base->terminal_command_history_update_last(command.command);
+							base->terminal_command_history_update(command.command, before_history_index);
 							before_history_index--;
 							reflash_command(base->terminal_get_command_history(before_history_index));
 						}
@@ -234,11 +234,12 @@ public:
 			}
 		run_command:
 			hideCursor();
-			base->terminal_command_history_update_last(command.command);
+			base->terminal_command_history_update(command.command, 0);
 			if(!base->terminal_run(command.command))
 				break;
 		}
 	end:
+		showCursor();
 		base->terminal_exit();
 		active_terminal=old_active_terminal;
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,FALSE);
