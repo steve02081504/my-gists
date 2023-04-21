@@ -47,8 +47,10 @@
 	replace_all(path, L"/", L"\\");
 	// "\\\\" -> "\\"
 	replace_all(path, L"\\\\", L"\\");
+	if(!path.ends_with(L"\\"))
+		path += L'\\';
 	if(!path.ends_with(L"ghost\\master\\"))
-		path += L"\\ghost\\master\\";
+		path += L"ghost\\master\\";
 	{
 		auto descript_txt_path = path + L"descript.txt";
 		if(_waccess(descript_txt_path.c_str(), 0) == 0) {

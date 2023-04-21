@@ -33,7 +33,7 @@ namespace ukagaka {
 		base_protocol_message(std::initializer_list<param_t> a) {
 			_params = a;
 		}
-		base_protocol_message(std::wstring a) {
+		explicit base_protocol_message(std::wstring a) {
 			if (a.find(L":") > a.find(L"\r\n"))
 				a.erase(0, a.find(L"\r\n"));
 			while (!a.empty()) {
@@ -55,7 +55,7 @@ namespace ukagaka {
 		explicit base_protocol_message(T a) {
 			*this = base_protocol_message(std::wstring(a));
 		}
-		base_protocol_message(std::string a){
+		explicit base_protocol_message(std::string a) {
 			auto charset = a;
 			charset		 = charset.substr(charset.find("\r\nCharset: ") + 11);
 			charset		 = charset.substr(0, charset.find("\r\n"));
@@ -118,12 +118,12 @@ namespace ukagaka {
 
 	struct protocol_message : base_protocol_message {
 		std::wstring _head;
-		protocol_message(std::wstring a){
+		explicit protocol_message(std::wstring a) {
 			_head = a.substr(0, a.find(L"\r\n"));
 			a.erase(0, _head.size() + 2);
 			((base_protocol_message&)*this) = base_protocol_message(a);
 		}
-		protocol_message(std::string a){
+		explicit protocol_message(std::string a) {
 			if(!a.size())
 				return;
 			auto charset = a;
