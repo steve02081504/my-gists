@@ -71,12 +71,17 @@ class terminal_runner{
 public:
 	terminal_runner(terminal*pt):base(pt){}
 	void run(size_t argc, std::vector<std::wstring>& argv) {
-		DWORD old_mode;
+		DWORD old_mode_out;
+		DWORD old_mode_err;
 		if(base->enable_virtual_terminal_processing()){
 			HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-			GetConsoleMode(hOut, &old_mode);
-			DWORD dwMode = old_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+			GetConsoleMode(hOut, &old_mode_out);
+			DWORD dwMode = old_mode_out | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 			SetConsoleMode(hOut, dwMode);
+			HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+			GetConsoleMode(hErr, &old_mode_err);
+			dwMode = old_mode_err | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+			SetConsoleMode(hErr, dwMode);
 		}
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE);
 		auto old_active_terminal=active_terminal;
@@ -115,11 +120,12 @@ public:
 						command.insert_index=command.command.size();
 					}
 					else{
-						move_pos.X+=GetStrWide(command.command,command.insert_index,command.insert_index+move_size);
-						while(move_pos.X >= reprinter.get_buffer_width()) {
-							move_pos.X -= reprinter.get_buffer_width();
+						auto tmp=move_pos.X+GetStrWide(command.command,command.insert_index,command.insert_index+move_size);
+						while(tmp >= (USHORT)reprinter.get_buffer_width()) {
+							tmp -= reprinter.get_buffer_width();
 							move_pos.Y++;
 						}
+						move_pos.X=(SHORT)tmp;
 						command.insert_index+=move_size;
 					}
 				}else{
@@ -128,11 +134,12 @@ public:
 						command.insert_index=0;
 					}
 					else{
-						move_pos.X-=GetStrWide(command.command,command.insert_index+move_size,command.insert_index);
-						while(move_pos.X<0){
-							move_pos.X+=reprinter.get_buffer_width();
+						auto tmp=move_pos.X-GetStrWide(command.command,command.insert_index+move_size,command.insert_index);
+						while(tmp<0){
+							tmp+=reprinter.get_buffer_width();
 							move_pos.Y--;
 						}
+						move_pos.X=(SHORT)tmp;
 						command.insert_index+=move_size;
 					}
 				}

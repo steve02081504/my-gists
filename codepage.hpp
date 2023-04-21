@@ -3,6 +3,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <string_view>
 #include <Windows.h>
 
 #if defined(_MSC_VER)
@@ -24,7 +25,7 @@ namespace CODEPAGE_n{
 	//no init lambda for c++23's string::resize_and_overwrite
 	inline auto no_init_buf = [](auto ptr, auto count) {return count;};
 	
-	inline std::string UnicodeToMultiByte(const wchar_t *Source, unsigned int CodePage, DWORD Flags=0)
+	[[nodiscard]]inline std::string UnicodeToMultiByte(const wchar_t *Source, unsigned int CodePage, DWORD Flags=0)
 	{
 		if ( Source && *Source ) {
 			if (int Len = ::WideCharToMultiByte(CodePage, Flags, Source, wcslen(Source), NULL, 0, NULL, NULL)) {
@@ -38,7 +39,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 
-	inline std::wstring MultiByteToUnicode(const char* Source, unsigned int CodePage, DWORD Flags=0)
+	[[nodiscard]]inline std::wstring MultiByteToUnicode(const char* Source, unsigned int CodePage, DWORD Flags=0)
 	{
 		if ( Source && *Source ) {
 			if (int Len = ::MultiByteToWideChar(CodePage, Flags, Source, strlen(Source), NULL, 0)) {
@@ -52,7 +53,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 
-	inline std::string UnicodeToMultiByte(const std::wstring&Source, unsigned int CodePage, DWORD Flags=0)
+	[[nodiscard]]inline std::string UnicodeToMultiByte(const std::wstring&Source, unsigned int CodePage, DWORD Flags=0)
 	{
 		if ( Source.size() ) {
 			if (int Len = ::WideCharToMultiByte(CodePage, Flags, Source.c_str(), Source.size(), NULL, 0, NULL, NULL)) {
@@ -66,7 +67,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 
-	inline std::wstring MultiByteToUnicode(const std::string&Source, unsigned int CodePage, DWORD Flags=0)
+	[[nodiscard]]inline std::wstring MultiByteToUnicode(const std::string&Source, unsigned int CodePage, DWORD Flags=0)
 	{
 		if ( Source.size() ) {
 			if (int Len = ::MultiByteToWideChar(CodePage, Flags, Source.c_str(), Source.size(), NULL, 0)) {
@@ -80,7 +81,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 
-	inline std::string UnicodeToMultiByte(const std::wstring_view &Source, unsigned int CodePage, DWORD Flags = 0) {
+	[[nodiscard]]inline std::string UnicodeToMultiByte(const std::wstring_view &Source, unsigned int CodePage, DWORD Flags = 0) {
 		if(Source.size()) {
 			if(int Len = ::WideCharToMultiByte(CodePage, Flags, Source.data(), Source.size(), NULL, 0, NULL, NULL)) {
 				std::string str;
@@ -93,7 +94,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 
-	inline std::wstring MultiByteToUnicode(const std::string_view &Source, unsigned int CodePage, DWORD Flags = 0) {
+	[[nodiscard]]inline std::wstring MultiByteToUnicode(const std::string_view &Source, unsigned int CodePage, DWORD Flags = 0) {
 		if(Source.size()) {
 			if(int Len = ::MultiByteToWideChar(CodePage, Flags, Source.data(), Source.size(), NULL, 0)) {
 				std::wstring str;
@@ -106,7 +107,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 	
-	inline std::wstring CodePagetoString(unsigned int cset){
+	[[nodiscard]]inline std::wstring_view CodePagetoString(unsigned int cset){
 		switch(cset){
 			case CP_SJIS:
 				return L"Shift_JIS";
@@ -120,9 +121,63 @@ namespace CODEPAGE_n{
 		return L"unknown charset";
 	}
 
-	inline CODEPAGE StringtoCodePage(const char *str)
+	[[nodiscard]]inline int _strnicmp(const char *s1, std::string_view s2, size_t n)
 	{
-		if ( str && *str ) {
+		if(s2.size() < n) {
+			n = s2.size();
+			const int ret = ::_strnicmp(s1, s2.data(), n);
+			if(ret == 0) {
+				return -1;
+			}
+			return ret;
+		}
+		if(s2.size() > n) {
+			const int ret = ::_strnicmp(s1, s2.data(), n);
+			if(ret == 0) {
+				return 1;
+			}
+			return ret;
+		}
+		return ::_strnicmp(s1, s2.data(), n);
+	}
+	[[nodiscard]]inline int _strnicmp(std::string_view s1,const char *s2, size_t n){
+		const auto aret=_strnicmp(s2,s1,n);
+		if(aret==0){
+			return 0;
+		}
+		return -aret;
+	}
+	//_wcsnicmp
+	[[nodiscard]]inline int _wcsnicmp(const wchar_t *s1, std::wstring_view s2, size_t n)
+	{
+		if(s2.size() < n) {
+			n = s2.size();
+			const int ret = ::_wcsnicmp(s1, s2.data(), n);
+			if(ret == 0) {
+				return -1;
+			}
+			return ret;
+		}
+		if(s2.size() > n) {
+			const int ret = ::_wcsnicmp(s1, s2.data(), n);
+			if(ret == 0) {
+				return 1;
+			}
+			return ret;
+		}
+		return ::_wcsnicmp(s1, s2.data(), n);
+	}
+	[[nodiscard]]inline int _wcsnicmp(std::wstring_view s1,const wchar_t *s2, size_t n){
+		const auto aret=_wcsnicmp(s2,s1,n);
+		if(aret==0){
+			return 0;
+		}
+		return -aret;
+	}
+
+	[[nodiscard]]inline CODEPAGE StringtoCodePage(std::string_view str)
+	{
+		if ( str.size() ) {
 			if ( _strnicmp(str,"shift_jis",9) == 0 ) {
 				return CP_SJIS;
 			}
@@ -145,9 +200,9 @@ namespace CODEPAGE_n{
 		return CP_SJIS;
 	}
 
-	inline CODEPAGE StringtoCodePage(const wchar_t *str)
+	[[nodiscard]]inline CODEPAGE StringtoCodePage(std::wstring_view str)
 	{
-		if ( str && *str ) {
+		if ( str.size() ) {
 			if ( _wcsnicmp(str,L"shift_jis",9) == 0 ) {
 				return CP_SJIS;
 			}

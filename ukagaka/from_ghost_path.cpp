@@ -1,6 +1,8 @@
 #pragma once
 
+#if !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <string>
 #include <Windows.h>
@@ -18,6 +20,9 @@ namespace from_ghost_path{
 		wstring name;
 		wstring icon_path;
 	};
+	wstring operator+(wstring s0, wstring_view s1) {
+		return s0 + wstring(s1);
+	}
 	name_and_icon_path_t get_name_and_icon_path(wstring ghost_path) {
 		auto descript_name = ghost_path + L"\\descript.txt";
 		auto descript_f	   = _wfopen(descript_name.c_str(), L"rb");
@@ -25,7 +30,8 @@ namespace from_ghost_path{
 		//
 		CODEPAGE_n::CODEPAGE cp = CODEPAGE_n::CP_UTF8;
 		char				 buf[2048];
-		wstring				 line, s0, s1;
+		wstring				 line;
+		wstring_view s0, s1;
 		if(descript_f) {
 			while(fgets(buf, 2048, descript_f)) {
 				line	 = CODEPAGE_n::MultiByteToUnicode(buf, cp);
@@ -36,7 +42,7 @@ namespace from_ghost_path{
 					line.resize(--len);
 				Split(line, s0, s1, L",");
 				if(s0 == L"charset")
-					cp = CODEPAGE_n::StringtoCodePage(s1.c_str());
+					cp = CODEPAGE_n::StringtoCodePage(s1);
 				else if(s0 == L"icon") {
 					aret.icon_path = ghost_path + L'\\' + s1;
 					if(!PathFileExistsW(aret.icon_path.c_str()))
@@ -64,7 +70,8 @@ namespace from_ghost_path{
 		//
 		CODEPAGE_n::CODEPAGE cp = CODEPAGE_n::CP_UTF8;
 		char				 buf[2048];
-		wstring				 line, s0, s1;
+		wstring				 line;
+		wstring_view s0, s1;
 		if(descript_f) {
 			while(fgets(buf, 2048, descript_f)) {
 				line	 = CODEPAGE_n::MultiByteToUnicode(buf, cp);
@@ -75,10 +82,10 @@ namespace from_ghost_path{
 					line.resize(--len);
 				Split(line, s0, s1, L",");
 				if(s0 == L"charset")
-					cp = CODEPAGE_n::StringtoCodePage(s1.c_str());
+					cp = CODEPAGE_n::StringtoCodePage(s1);
 				else if(s0 == L"name") {
 					fclose(descript_f);
-					return s1;
+					return wstring(s1);
 				}
 			}
 			fclose(descript_f);
@@ -91,7 +98,8 @@ namespace from_ghost_path{
 		//
 		CODEPAGE_n::CODEPAGE cp = CODEPAGE_n::CP_UTF8;
 		char				 buf[2048];
-		wstring				 line, s0, s1;
+		wstring				 line;
+		wstring_view s0, s1;
 		if(descript_f) {
 			while(fgets(buf, 2048, descript_f)) {
 				line	 = CODEPAGE_n::MultiByteToUnicode(buf, cp);
@@ -102,7 +110,7 @@ namespace from_ghost_path{
 					line.resize(--len);
 				Split(line, s0, s1, L",");
 				if(s0 == L"charset")
-					cp = CODEPAGE_n::StringtoCodePage(s1.c_str());
+					cp = CODEPAGE_n::StringtoCodePage(s1);
 				else if(s0 == L"shiori") {
 					fclose(descript_f);
 					return ghost_path + s1;

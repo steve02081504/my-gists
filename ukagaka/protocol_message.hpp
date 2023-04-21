@@ -60,7 +60,7 @@ namespace ukagaka {
 			charset		 = charset.substr(charset.find("\r\nCharset: ") + 11);
 			charset		 = charset.substr(0, charset.find("\r\n"));
 			using namespace CODEPAGE_n;
-			auto _wstring_this = MultiByteToUnicode(a, StringtoCodePage(charset.c_str()));
+			auto _wstring_this = MultiByteToUnicode(a, StringtoCodePage(charset));
 			*this = base_protocol_message(_wstring_this);
 		}
 		explicit operator std::wstring()const {
@@ -75,7 +75,7 @@ namespace ukagaka {
 		auto get_charset_codepage()const {
 			auto charset = arec(L"Charset");
 			using namespace CODEPAGE_n;
-			return StringtoCodePage(charset.c_str());
+			return StringtoCodePage(charset);
 		}
 		explicit operator std::string()const {
 			using namespace CODEPAGE_n;
@@ -130,7 +130,7 @@ namespace ukagaka {
 			charset		 = charset.substr(charset.find("\r\nCharset: ") + 11);
 			charset		 = charset.substr(0, charset.find("\r\n"));
 			using namespace CODEPAGE_n;
-			auto _wstring_this = MultiByteToUnicode(a, StringtoCodePage(charset.c_str()));
+			auto _wstring_this = MultiByteToUnicode(a, StringtoCodePage(charset));
 			*this=protocol_message(_wstring_this);
 		}
 		protocol_message(std::wstring head,base_protocol_message base) : 
