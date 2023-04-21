@@ -1,6 +1,6 @@
 #include <string>
 #include <Windows.h>
-#include "../STL/replace_all.hpp"
+#include "../STL/replace_all.cpp"
 
 [[nodiscard]] bool is_ghost_path(std::wstring path) {
 	// "/" -> "\\"
@@ -37,6 +37,22 @@
 		auto descript_txt_path = ghost_path + L"descript.txt";
 		if(_waccess(descript_txt_path.c_str(), 0) == 0) {
 			return ghost_path;
+		}
+	}
+	return {};
+}
+
+[[nodiscard]] std::wstring make_ghost_path(std::wstring path) {
+	// "/" -> "\\"
+	replace_all(path, L"/", L"\\");
+	// "\\\\" -> "\\"
+	replace_all(path, L"\\\\", L"\\");
+	if(!path.ends_with(L"ghost\\master\\"))
+		path += L"\\ghost\\master\\";
+	{
+		auto descript_txt_path = path + L"descript.txt";
+		if(_waccess(descript_txt_path.c_str(), 0) == 0) {
+			return path;
 		}
 	}
 	return {};
