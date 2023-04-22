@@ -9,6 +9,7 @@
 
 #include "../codepage.cpp"
 #include "../STL/Split.cpp"
+#include "../windows/SetIcon.cpp"
 
 #include <shlwapi.h>//PathFileExistsW
 //lib of PathFileExists
@@ -119,5 +120,12 @@ namespace from_ghost_path{
 			fclose(descript_f);
 		}
 		return {};
+	}
+	HICON load_icon(wstring ghost_path, wstring icon_path) {
+		//判断是否是绝对路径
+		if(icon_path.size() >= 2 && icon_path[1] == L':')
+			return LoadIconFrom(icon_path.c_str());
+		else
+			return LoadIconFrom((ghost_path + L'\\' + icon_path).c_str());
 	}
 }
