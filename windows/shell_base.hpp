@@ -32,17 +32,18 @@ struct editting_command_t{
 };
 class terminal{
 private:
-	//some private member
-private:
 	friend class terminal_runner;
+private:
+	DWORD old_mode_out;
+	DWORD old_mode_err;
 protected:
-	virtual void before_terminal_login(){}
+	virtual void before_terminal_login();
 	virtual void terminal_args(size_t argc, std::vector<std::wstring>&argv){}
 	virtual void terminal_login(){}
 	virtual editting_command_t terminal_tab_press(const editting_command_t&command,size_t tab_num){return command;}
 	virtual editting_command_t terminal_command_complete_by_right(const editting_command_t&command){return command;}
 	virtual bool terminal_run(const std::wstring&command)=0;
-	virtual void terminal_exit(){}
+	virtual void terminal_exit();
 	virtual std::wstring terminal_command_update(std::wstring command){return command;}
 	virtual void terminal_command_history_new()=0;
 	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)=0;
@@ -101,6 +102,13 @@ public:
 class simple_terminal:public terminal{
 	std::vector<std::wstring>command_history;
 protected:
+	virtual void before_terminal_login()override{
+		terminal::before_terminal_login();
+	}
+	virtual void terminal_exit()override{
+		command_history.clear();
+		terminal::terminal_exit();
+	}
 	virtual bool terminal_run(const std::wstring&command)=0;
 	virtual void terminal_command_history_new()override{
 		command_history.push_back({});

@@ -71,18 +71,6 @@ class terminal_runner{
 public:
 	terminal_runner(terminal*pt):base(pt){}
 	void run(size_t argc, std::vector<std::wstring>& argv) {
-		DWORD old_mode_out;
-		DWORD old_mode_err;
-		if(base->enable_virtual_terminal_processing()){
-			HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-			GetConsoleMode(hOut, &old_mode_out);
-			DWORD dwMode = old_mode_out | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-			SetConsoleMode(hOut, dwMode);
-			HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
-			GetConsoleMode(hErr, &old_mode_err);
-			dwMode = old_mode_err | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-			SetConsoleMode(hErr, dwMode);
-		}
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE);
 		auto old_active_terminal=active_terminal;
 		active_terminal=base;
@@ -254,6 +242,28 @@ public:
 };
 void terminal::base_main(size_t argc, std::vector<std::wstring>&argv){
 	terminal_runner(this).run(argc,argv);
+}
+
+void terminal::before_terminal_login() {
+	if(this->enable_virtual_terminal_processing()) {
+		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+		GetConsoleMode(hOut, &old_mode_out);
+		DWORD dwMode = old_mode_out | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		SetConsoleMode(hOut, dwMode);
+		HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+		GetConsoleMode(hErr, &old_mode_err);
+		dwMode = old_mode_err | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		SetConsoleMode(hErr, dwMode);
+	}
+}
+
+void terminal::terminal_exit() {
+	if(this->enable_virtual_terminal_processing()) {
+		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleMode(hOut, old_mode_out);
+		HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+		SetConsoleMode(hErr, old_mode_err);
+	}
 }
 
 inline editting_command_t&& editting_command_t::insert(std::wstring insert_str) && {
