@@ -37,3 +37,23 @@ std::wstring LoadStringFromResource(
 	else
 		return L"";
 }
+
+std::wstring_view LoadStringViewFromResource(
+	__in UINT		   stringID,
+	__in_opt HINSTANCE instance) {
+	WCHAR *pBuf = NULL;
+
+	int len = LoadStringW(
+		instance,
+		stringID,
+		reinterpret_cast<LPWSTR>(&pBuf), 0);
+
+	if(len)
+		return std::wstring_view(pBuf, len
+		#if defined(RESOURCE_STRINGS_ARE_NULL_TERMINATED)
+			-1//exclude null terminator
+		#endif
+		);
+	else
+		return L"";
+}

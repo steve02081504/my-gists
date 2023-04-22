@@ -21,8 +21,8 @@ namespace from_ghost_path{
 		wstring name;
 		wstring icon_path;
 	};
-	wstring operator+(wstring s0, wstring_view s1) {
-		return s0 + wstring(s1);
+	inline wstring operator+(wstring s0, wstring_view s1) {
+		return s0.append(s1);
 	}
 	name_and_icon_path_t get_name_and_icon_path(wstring ghost_path) {
 		auto descript_name = ghost_path + L"\\descript.txt";
