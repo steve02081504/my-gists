@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <string>
 #include "SetIcon.h"
 
 BOOL GetIcon(HWND hWnd, ICON_INFO_t *pIconInfo) {
@@ -22,7 +23,7 @@ BOOL SetIcon(HWND hWnd, ICON_INFO_t IconInfo) {
 }
 
 void SetIcon(HWND hWnd, HICON hIcon) {
-	SetIcon(hWnd, {hIcon, hIcon});
+	SetIcon(hWnd, ICON_INFO_t{hIcon, hIcon});
 }
 HICON LoadIconFrom(LPCWSTR pszFileName) {
 	return (HICON)LoadImageW(
@@ -32,11 +33,24 @@ HICON LoadIconFrom(LPCWSTR pszFileName) {
 		0, 0,
 		LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
 }
+HICON LoadIconFrom(std::wstring icon_path) {
+	return LoadIconFrom(icon_path.c_str());
+}
+HICON LoadIconWithBasePath(std::wstring base_path, std::wstring icon_path) {
+	//判断是否是绝对路径
+	if(icon_path.size() >= 2 && icon_path[1] == L':')
+		return LoadIconFrom(icon_path.c_str());
+	else
+		return LoadIconFrom((base_path + L'\\' + icon_path).c_str());
+}
 bool SetIcon(HWND hWnd, LPCWSTR pszFileName) {
 	HICON hIcon = LoadIconFrom(pszFileName);
 	if(hIcon)
 		SetIcon(hWnd, hIcon);
 	return hIcon;
+}
+bool SetIcon(HWND hWnd, std::wstring icon_path) {
+	return SetIcon(hWnd, icon_path.c_str());
 }
 ICON_INFO_t GetIcon(HWND hWnd) {
 	ICON_INFO_t icon_info;
@@ -51,6 +65,9 @@ void SetConsoleIcon(HICON hIcon) {
 }
 bool SetConsoleIcon(LPCWSTR pszFileName) {
 	return SetIcon(GetConsoleWindow(), pszFileName);
+}
+bool SetConsoleIcon(std::wstring icon_path) {
+	return SetConsoleIcon(icon_path.c_str());
 }
 bool SetConsoleIcon(ICON_INFO_t icon_info) {
 	return SetIcon(GetConsoleWindow(), icon_info);

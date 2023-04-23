@@ -32,14 +32,12 @@ public:
 		return *this;
 	}
 	base_out_t& operator<<(const wchar_t* str) {
-		DWORD written;
-		WriteConsoleW(_h, str, wcslen(str), &written, nullptr);
-		return *this;
+		std::wstring_view str_view(str);
+		return operator<<(str_view);
 	}
 	base_out_t& operator<<(const char* str) {
-		DWORD written;
-		WriteConsoleA(_h, str, strlen(str), &written, nullptr);
-		return *this;
+		std::string_view str_view(str);
+		return operator<<(str_view);
 	}
 	base_out_t& operator<<(const wchar_t ch) {
 		DWORD written;
