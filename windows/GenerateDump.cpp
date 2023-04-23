@@ -3,7 +3,7 @@
 
 void OnError(PEXCEPTION_POINTERS pExceptionPointers);
 
-int GenerateDump(PEXCEPTION_POINTERS pExceptionPointers) {
+int GenerateDump(PEXCEPTION_POINTERS pExceptionPointers) noexcept {
 	HANDLE hDumpFile = CreateFileW(L"Dump.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if(hDumpFile == INVALID_HANDLE_VALUE) {
 		return EXCEPTION_EXECUTE_HANDLER;
@@ -27,16 +27,19 @@ int GenerateDump(PEXCEPTION_POINTERS pExceptionPointers) {
 	mdei.ExceptionPointers = pExceptionPointers;
 	mdei.ClientPointers	   = FALSE;
 
-	BOOL bRet = pfnMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, MiniDumpNormal, &mdei, NULL, NULL);
+	const BOOL bRet = pfnMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, MiniDumpNormal, &mdei, NULL, NULL);
 	CloseHandle(hDumpFile);
+
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 LONG WINAPI ExceptionFilter(LPEXCEPTION_POINTERS lpExceptionInfo) {
 	if(IsDebuggerPresent()) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
-	return GenerateDump(lpExceptionInfo);
+	const auto tmp = GenerateDump(lpExceptionInfo);
+	OnError(lpExceptionInfo);
+	return tmp;
 }
-void InstallExceptionFilter() {
+void InstallExceptionFilter() noexcept {
 	SetUnhandledExceptionFilter(ExceptionFilter);
 }

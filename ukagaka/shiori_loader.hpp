@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <string>
 #include "string2HGLOBAL.hpp"
 #include "../file/GetFilename_sPath.hpp"
 #include "../codepage.hpp"
@@ -51,12 +52,12 @@ public:
 		error_logger_p error_logger = NULL;
 		warning_logger_p warning_logger = NULL;
 		error_logger_type() = default;
-		explicit error_logger_type(error_logger_p error_logger, warning_logger_p warning_logger=NULL) :error_logger(error_logger), warning_logger(warning_logger) {}
-		void operator()(Error err) {
+		explicit error_logger_type(error_logger_p error_logger, warning_logger_p warning_logger=NULL) noexcept:error_logger(error_logger), warning_logger(warning_logger) {}
+		void operator()(Error err) noexcept {
 			if (error_logger)
 				error_logger(err);
 		}
-		void operator()(Warning warn) {
+		void operator()(Warning warn) noexcept {
 			if (warning_logger)
 				warning_logger(warn);
 		}
@@ -75,32 +76,32 @@ private:
 	bool loadok=0,set_logsend_ok=0;
 	error_logger_type error_logger;
 
-	void init_methods();
-	void call_load(LPCWSTR pszFileName);
-	bool call_unload();
-	bool set_logsend(HWND hwnd);
-	bool methods_All_OK();
+	void init_methods() noexcept;
+	void call_load(std::wstring FileName);
+	bool call_unload() noexcept;
+	bool set_logsend(HWND hwnd)noexcept;
+	bool methods_All_OK()noexcept;
 public:
-	bool All_OK();
+	bool All_OK()noexcept;
 	Cshiori(error_logger_type error_logger = {});
-	void SetTo(LPCWSTR pszFileName);
-	Cshiori(LPCWSTR pszFileName, error_logger_type error_logger = {});
+	void SetTo(std::wstring FileName);
+	Cshiori(std::wstring FileName, error_logger_type error_logger = {});
 	~Cshiori();
 	void Doreload();
-	bool Dounload();
-	void SetCodePage(std::wstring);
-	void SetCodePage(CODEPAGE_n::CODEPAGE);
+	bool Dounload()noexcept;
+	void		 SetCodePage(std::wstring) noexcept;
+	void SetCodePage(CODEPAGE_n::CODEPAGE)noexcept;
 	std::string operator()(std::string);
 	std::wstring operator()(std::wstring);
-	bool CI_check_failed();
-	bool		 can_make_CI_check();
-	bool		 can_set_logsend();
-	void Set_loghandler(void (*loghandler)(const wchar_t *str, int mode, int id));
-	void set_logsend_hwnd(HWND hwnd);
-	bool is_logsend_ok();
+	bool CI_check_failed()noexcept;
+	bool		 can_make_CI_check()noexcept;
+	bool		 can_set_logsend()noexcept;
+	void		 Set_loghandler(void (*loghandler)(const wchar_t* str, int mode, int id)) noexcept;
+	void		 set_logsend_hwnd(HWND hwnd) noexcept;
+	bool		 is_logsend_ok() noexcept;
 };
 
-std::string_view to_string(Cshiori::Error err);
-std::string_view to_ansi_colored_string(Cshiori::Error err);
-std::string_view to_string(Cshiori::Warning warn);
-std::string_view to_ansi_colored_string(Cshiori::Warning warn);
+std::string_view to_string(Cshiori::Error err) noexcept;
+std::string_view to_ansi_colored_string(Cshiori::Error err) noexcept;
+std::string_view to_string(Cshiori::Warning warn) noexcept;
+std::string_view to_ansi_colored_string(Cshiori::Warning warn) noexcept;

@@ -7,7 +7,7 @@
 	#include <cstdio>
 #endif
 //const char
-[[nodiscard]] bool can_read_file(const char* filename) {
+[[nodiscard]] bool can_read_file(const char* filename) noexcept {
 	#ifdef _WIN32
 		HANDLE hFile = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)
@@ -22,7 +22,7 @@
 	#endif
 }
 
-[[nodiscard]] bool can_write_file(const char* filename) {
+[[nodiscard]] bool can_write_file(const char* filename) noexcept {
 	#ifdef _WIN32
 		HANDLE hFile = CreateFileA(filename, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)
@@ -37,7 +37,7 @@
 	#endif
 }
 
-[[nodiscard]] bool can_read_write_file(const char* filename) {
+[[nodiscard]] bool can_read_write_file(const char* filename) noexcept {
 	#ifdef _WIN32
 		HANDLE hFile = CreateFileA(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)
@@ -57,7 +57,7 @@
 	#endif
 }
 //wconst char
-[[nodiscard]] bool can_read_file(const wchar_t* filename) {
+[[nodiscard]] bool can_read_file(const wchar_t* filename) noexcept {
 	#ifdef _WIN32
 		HANDLE hFile = CreateFileW(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)
@@ -72,7 +72,7 @@
 	#endif
 }
 
-[[nodiscard]] bool can_write_file(const wchar_t* filename) {
+[[nodiscard]] bool can_write_file(const wchar_t* filename) noexcept {
 	#ifdef _WIN32
 		HANDLE hFile = CreateFileW(filename, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)
@@ -87,7 +87,7 @@
 	#endif
 }
 
-[[nodiscard]] bool can_read_write_file(const wchar_t* filename) {
+[[nodiscard]] bool can_read_write_file(const wchar_t* filename) noexcept {
 	#ifdef _WIN32
 		HANDLE hFile = CreateFileW(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)

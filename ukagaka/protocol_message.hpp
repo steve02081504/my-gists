@@ -20,7 +20,7 @@ namespace ukagaka {
 			_params.push_back({ a,{} });
 			return _params.back().var;
 		}
-		const auto&arec(std::wstring a)const {
+		const auto&arec(std::wstring a)const noexcept{
 			for (auto& x : _params) {
 				if (x.name == a)
 					return x.var;
@@ -82,12 +82,12 @@ namespace ukagaka {
 			return UnicodeToMultiByte((std::wstring)*this, get_charset_codepage());
 		}
 		auto var(){return arec(L"Script");}
-		auto&get_params(){return _params;}
-		const auto&get_params()const{return _params;}
+		auto&get_params()noexcept{return _params;}
+		const auto&get_params()const noexcept{return _params;}
 		bool has(std::wstring a){return arec(a).size();}
 		auto&operator[](std::wstring a){return arec(a);}
 		const auto&operator[](std::wstring a)const{return arec(a);}
-		auto erase(std::wstring a){
+		auto erase(std::wstring a)noexcept{
 			for(auto i=_params.begin();i!=_params.end();i++){
 				if(i->name==a){
 					_params.erase(i);

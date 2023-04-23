@@ -6,10 +6,10 @@
 #include "../codepage.cpp"
 #include "../ansi_color.hpp"
 
-bool Cshiori::All_OK() { return methods_All_OK() && loadok; }
-bool Cshiori::methods_All_OK() { return dll && load && unload && request; }
+bool Cshiori::All_OK() noexcept { return methods_All_OK() && loadok; }
+bool Cshiori::methods_All_OK() noexcept { return dll && load && unload && request; }
 
-void Cshiori::init_methods(){
+void Cshiori::init_methods() noexcept {
 	load=(load_type)GetProcAddress(dll,"load");
 	if(!load)
 		error_logger(Error::interface_load_not_found);
@@ -27,15 +27,15 @@ void Cshiori::init_methods(){
 	if(!logsender)
 		error_logger(Warning::interface_logsend_not_found);
 }
-void Cshiori::call_load(LPCWSTR pszFileName){
-	auto a=string2HGLOBAL(GetFilename_sPath(pszFileName));
-	loadok=load(a.p,a.size);
+void Cshiori::call_load(std::wstring FileName) {
+	auto a = string2HGLOBAL(GetFilename_sPath(FileName));
+	loadok = load(a.p, a.size);
 	if(!loadok) {
 		error_logger(Error::interface_load_failed);
 		Dounload();
 	}
 }
-bool Cshiori::call_unload(){
+bool Cshiori::call_unload() noexcept {
 	if(!loadok)
 		error_logger(Error::skip_unload_call_because_load_failed);
 	else if(!unload)
@@ -51,12 +51,12 @@ bool Cshiori::call_unload(){
 Cshiori::Cshiori(error_logger_type error_logger_v) {
 	error_logger = error_logger_v;
 }
-void Cshiori::SetTo(LPCWSTR pszFileName){
+void Cshiori::SetTo(std::wstring FileName) {
 	if(dll)
 		Dounload();
-	loadok=false;
-	filename=pszFileName;
-	dll=LoadLibraryW(pszFileName);
+	loadok	 = false;
+	filename = FileName;
+	dll		 = LoadLibraryW(FileName.c_str());
 	if(!dll)
 		error_logger(Error::dll_file_load_failed);
 	else
@@ -69,13 +69,13 @@ void Cshiori::SetTo(LPCWSTR pszFileName){
 			if(!set_logsend_ok)
 				error_logger(Warning::logsend_failed);
 		}
-		call_load(pszFileName);
+		call_load(FileName);
 	}
 	else
 		Dounload();
 }
-Cshiori::Cshiori(LPCWSTR pszFileName,error_logger_type error_logger_v):Cshiori(error_logger_v){
-	SetTo(pszFileName);
+Cshiori::Cshiori(std::wstring FileName,error_logger_type error_logger_v):Cshiori(error_logger_v){
+	SetTo(FileName);
 }
 Cshiori::~Cshiori(){
 	Dounload();
@@ -84,7 +84,7 @@ void Cshiori::Doreload(){
 	Dounload();
 	SetTo(filename.c_str());
 }
-bool Cshiori::Dounload(){
+bool Cshiori::Dounload() noexcept {
 	if(!dll)return true;//?
 	const bool aret=call_unload();
 	unload=NULL;
@@ -94,11 +94,11 @@ bool Cshiori::Dounload(){
 	return aret;
 }
 using namespace CODEPAGE_n;
-void Cshiori::SetCodePage(std::wstring a){
-	SetCodePage((CODEPAGE_n::CODEPAGE)StringtoCodePage(a.c_str()));
+void Cshiori::SetCodePage(std::wstring a) noexcept {
+	SetCodePage((CODEPAGE_n::CODEPAGE)StringtoCodePage(a));
 }
 
-void Cshiori::SetCodePage(CODEPAGE_n::CODEPAGE a){
+void Cshiori::SetCodePage(CODEPAGE_n::CODEPAGE a) noexcept {
 	cp=a;
 }
 
@@ -118,38 +118,38 @@ std::wstring Cshiori::operator()(std::wstring a){
 	return MultiByteToUnicode(operator()(UnicodeToMultiByte(a,cp)),cp);
 }
 
-bool Cshiori::CI_check_failed(){
+bool Cshiori::CI_check_failed() noexcept {
 	return (!checker)||checker();
 }
 
-bool Cshiori::can_make_CI_check(){
+bool Cshiori::can_make_CI_check() noexcept {
 	return checker;
 }
 
-bool Cshiori::can_set_logsend(){
+bool Cshiori::can_set_logsend() noexcept {
 	return logsender;
 }
 
-bool Cshiori::set_logsend(HWND hwnd) {
+bool Cshiori::set_logsend(HWND hwnd) noexcept {
 	return (!logsender)||logsender((long)hwnd);
 }
 
-void Cshiori::set_logsend_hwnd(HWND hwnd) {
+void Cshiori::set_logsend_hwnd(HWND hwnd) noexcept {
 	hwnd_for_logsender=hwnd;
 }
 
-bool Cshiori::is_logsend_ok() {
+bool Cshiori::is_logsend_ok() noexcept {
 	return set_logsend_ok;
 }
 
-void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode, int id)){
+void Cshiori::Set_loghandler(void (*loghandler_v)(const wchar_t *str, int mode, int id)) noexcept {
 	loghandler=loghandler_v;
 	auto Setter=(Set_loghandler_type)GetProcAddress(dll,"Set_loghandler");
 	if(Setter)
 		Setter(loghandler);
 }
 
-std::string_view to_string(Cshiori::Error err) {
+std::string_view to_string(Cshiori::Error err) noexcept {
 	using enum Cshiori::Error;
 	switch(err) {
 	case interface_load_not_found:
@@ -173,7 +173,7 @@ std::string_view to_string(Cshiori::Error err) {
 	}
 }
 
-std::string_view to_ansi_colored_string(Cshiori::Error err) {
+std::string_view to_ansi_colored_string(Cshiori::Error err) noexcept {
 	using enum Cshiori::Error;
 	switch(err) {
 	case interface_load_not_found:
@@ -198,7 +198,7 @@ std::string_view to_ansi_colored_string(Cshiori::Error err) {
 }
 
 
-std::string_view to_string(Cshiori::Warning warn) {
+std::string_view to_string(Cshiori::Warning warn) noexcept {
 	using enum Cshiori::Warning;
 	switch (warn) {
 	case interface_CI_check_not_found:
@@ -211,7 +211,7 @@ std::string_view to_string(Cshiori::Warning warn) {
 		return "Something fucked up.";
 	}
 }
-std::string_view to_ansi_colored_string(Cshiori::Warning warn) {
+std::string_view to_ansi_colored_string(Cshiori::Warning warn) noexcept {
 	using enum Cshiori::Warning;
 	switch (warn) {
 	case interface_CI_check_not_found:

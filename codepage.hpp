@@ -107,7 +107,7 @@ namespace CODEPAGE_n{
 		return {};
 	}
 	
-	[[nodiscard]]inline std::wstring_view CodePagetoString(unsigned int cset){
+	[[nodiscard]]inline std::wstring_view CodePagetoString(unsigned int cset)noexcept{
 		switch(cset){
 			case CP_SJIS:
 				return L"Shift_JIS";
@@ -117,11 +117,12 @@ namespace CODEPAGE_n{
 				return L"EUC-JP";
 			case CP_UTF8:
 				return L"UTF-8";
+			default:
+				return L"unknown charset";
 		}
-		return L"unknown charset";
 	}
 
-	[[nodiscard]]inline int _strnicmp(const char *s1, std::string_view s2, size_t n)
+	[[nodiscard]]inline int _strnicmp(const char *s1, std::string_view s2, size_t n)noexcept
 	{
 		if(s2.size() < n) {
 			n = s2.size();
@@ -140,7 +141,7 @@ namespace CODEPAGE_n{
 		}
 		return ::_strnicmp(s1, s2.data(), n);
 	}
-	[[nodiscard]]inline int _strnicmp(std::string_view s1,const char *s2, size_t n){
+	[[nodiscard]]inline int _strnicmp(std::string_view s1,const char *s2, size_t n)noexcept{
 		const auto aret=_strnicmp(s2,s1,n);
 		if(aret==0){
 			return 0;
@@ -148,7 +149,7 @@ namespace CODEPAGE_n{
 		return -aret;
 	}
 	//_wcsnicmp
-	[[nodiscard]]inline int _wcsnicmp(const wchar_t *s1, std::wstring_view s2, size_t n)
+	[[nodiscard]]inline int _wcsnicmp(const wchar_t *s1, std::wstring_view s2, size_t n)noexcept
 	{
 		if(s2.size() < n) {
 			n = s2.size();
@@ -167,7 +168,7 @@ namespace CODEPAGE_n{
 		}
 		return ::_wcsnicmp(s1, s2.data(), n);
 	}
-	[[nodiscard]]inline int _wcsnicmp(std::wstring_view s1,const wchar_t *s2, size_t n){
+	[[nodiscard]]inline int _wcsnicmp(std::wstring_view s1,const wchar_t *s2, size_t n)noexcept{
 		const auto aret=_wcsnicmp(s2,s1,n);
 		if(aret==0){
 			return 0;
@@ -175,7 +176,7 @@ namespace CODEPAGE_n{
 		return -aret;
 	}
 
-	[[nodiscard]]inline CODEPAGE StringtoCodePage(std::string_view str)
+	[[nodiscard]] inline CODEPAGE StringtoCodePage(std::string_view str) noexcept
 	{
 		if ( str.size() ) {
 			if ( _strnicmp(str,"shift_jis",9) == 0 ) {
@@ -200,7 +201,7 @@ namespace CODEPAGE_n{
 		return CP_SJIS;
 	}
 
-	[[nodiscard]]inline CODEPAGE StringtoCodePage(std::wstring_view str)
+	[[nodiscard]] inline CODEPAGE StringtoCodePage(std::wstring_view str) noexcept
 	{
 		if ( str.size() ) {
 			if ( _wcsnicmp(str,L"shift_jis",9) == 0 ) {

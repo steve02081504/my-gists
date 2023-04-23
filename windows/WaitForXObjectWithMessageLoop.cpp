@@ -3,7 +3,7 @@
 #define NO_MIN_MAX
 #include <windows.h>
 
-DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds) {
+DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds) noexcept {
 	MSG msg;
 	while(1) {
 		if(::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -11,10 +11,10 @@ DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds) {
 			::DispatchMessage(&msg);
 		}
 		else {
-			auto msec_wait = min((DWORD)100, dwMilliseconds);
+			const auto msec_wait = min((DWORD)100, dwMilliseconds);
 			if(dwMilliseconds != INFINITE)
 				dwMilliseconds -= msec_wait;
-			DWORD dwRet = ::WaitForSingleObject(hHandle, msec_wait);
+			const DWORD dwRet = ::WaitForSingleObject(hHandle, msec_wait);
 			if(dwRet == WAIT_TIMEOUT) {
 				if(dwMilliseconds == 0)
 					return dwRet;

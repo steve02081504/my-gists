@@ -32,7 +32,7 @@ namespace SSTP_link_n{
 		Socket_link_t*	 pSocket = nullptr;
 		SSTP_link_args_t _header{};
 	protected:
-		const auto& get_header()const { return _header; }
+		const auto& get_header()const noexcept{ return _header; }
 	public:
 		~SSTP_link_Socket_t() {
 			delete pSocket;
@@ -91,13 +91,13 @@ namespace SSTP_link_n{
 	protected:
 		SSTP_link_args_t get_header()const { return {}; }
 	public:
-		bool was_linked_to_ghost() {
+		bool was_linked_to_ghost() noexcept {
 			return toghost;
 		}
-		void link_to_ghost(HWND ghost) {
+		void link_to_ghost(HWND ghost) noexcept {
 			toghost = ghost;
 		}
-		void base_send(std::string massage) {
+		void base_send(std::string massage) noexcept {
 			if(!toghost)
 				return;
 			COPYDATASTRUCT cdt;
@@ -122,15 +122,16 @@ namespace SSTP_link_n{
 					return {};
 				else
 					Sleep(250);
+				sec= time(0);
 			}
 		}
-		void before_SSTP_send(){
+		void before_SSTP_send() noexcept {
 			aret.clear();
 		}
-		void DirectSSTPprocess(COPYDATASTRUCT*pcdt) {
-			aret = std::string((char*)pcdt->lpData, (size_t)pcdt->cbData);
+		void DirectSSTPprocess(const COPYDATASTRUCT*pcdt) {
+			aret = std::string((const char*)pcdt->lpData, (size_t)pcdt->cbData);
 		}
-		void setReplayHwnd(HWND hwnd) {
+		void setReplayHwnd(HWND hwnd)noexcept {
 			replay_to = hwnd;
 		}
 	};

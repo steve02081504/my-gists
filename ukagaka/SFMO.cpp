@@ -10,7 +10,7 @@ bool SFMO_t::Update_info() {
 
 	if(hMutex) {
 		//INFINITEで待機すると永遠に待ち続けてGUIが止まるので適宜工夫すること
-		DWORD result = WaitForSingleObject(hMutex, INFINITE);
+		const DWORD result = WaitForSingleObject(hMutex, INFINITE);
 
 		if(result != WAIT_OBJECT_0) {
 			isWaitSuccess = false;
@@ -22,10 +22,10 @@ bool SFMO_t::Update_info() {
 		HANDLE hFMO = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"SakuraUnicode");
 
 		if(hFMO) {
-			std::byte *pDataStart = static_cast<std::byte *>(MapViewOfFile(hFMO, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+			const std::byte *pDataStart = static_cast<std::byte *>(MapViewOfFile(hFMO, FILE_MAP_ALL_ACCESS, 0, 0, 0));
 
 			if(pDataStart) {
-				char *pData = (char *)(pDataStart + 4);
+				const char *pData = (char *)(pDataStart + 4);
 
 				std::string	 FMOinfo_r(pData);
 				std::wstring FMOinfo = CODEPAGE_n::MultiByteToUnicode(FMOinfo_r, CODEPAGE_n::CP_UTF8);
@@ -33,7 +33,7 @@ bool SFMO_t::Update_info() {
 				info_map.clear();
 
 				while(FMOinfo.size()) {
-					auto end = FMOinfo.find(L"\r\n");
+					const auto end = FMOinfo.find(L"\r\n");
 					line	 = FMOinfo.substr(0, end);
 					if(end != std::wstring::npos)
 						FMOinfo = FMOinfo.substr(end + 2);
@@ -91,7 +91,7 @@ HWND SFMO_t::wait_ghost_info_by_name(std::wstring ghost_name, size_t wait_time) 
 			return NULL;
 		if(Update_info())
 			for(auto &i: info_map) {
-				HWND tmp_hwnd = (HWND)wcstoll(i.second[L"hwnd"].c_str(), nullptr, 10);
+				const HWND tmp_hwnd = (HWND)wcstoll(i.second[L"hwnd"].c_str(), nullptr, 10);
 				if(i.second[L"name"] == ghost_name)
 					return tmp_hwnd;
 			}

@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 std::wstring &CutSpace(std::wstring &str) {
-	auto pos1 = str.find_first_not_of(L" \t");
-	auto pos2 = str.find_last_not_of(L" \t");
+	const auto pos1 = str.find_first_not_of(L" \t");
+	const auto pos2 = str.find_last_not_of(L" \t");
 	if(pos1 == std::wstring::npos) {
 		str = L"";
 		return str;
@@ -16,8 +16,8 @@ std::wstring &CutSpace(std::wstring &str) {
 };
 
 std::string &CutSpace(std::string &str) {
-	auto pos1 = str.find_first_not_of(" \t");
-	auto pos2 = str.find_last_not_of(" \t");
+	const auto pos1 = str.find_first_not_of(" \t");
+	const auto pos2 = str.find_last_not_of(" \t");
 	if(pos1 == std::string::npos) {
 		str = "";
 		return str;
@@ -32,8 +32,8 @@ std::string &CutSpace(std::string &str) {
 
 //string_view
 std::wstring_view &CutSpace(std::wstring_view &str) {
-	auto pos1 = str.find_first_not_of(L" \t");
-	auto pos2 = str.find_last_not_of(L" \t");
+	const auto pos1 = str.find_first_not_of(L" \t");
+	const auto pos2 = str.find_last_not_of(L" \t");
 	if(pos1 == std::wstring::npos) {
 		str = L"";
 		return str;
@@ -47,8 +47,8 @@ std::wstring_view &CutSpace(std::wstring_view &str) {
 };
 
 std::string_view &CutSpace(std::string_view &str) {
-	auto pos1 = str.find_first_not_of(" \t");
-	auto pos2 = str.find_last_not_of(" \t");
+	const auto pos1 = str.find_first_not_of(" \t");
+	const auto pos2 = str.find_last_not_of(" \t");
 	if(pos1 == std::string::npos) {
 		str = "";
 		return str;

@@ -14,7 +14,7 @@ std::wstring GetSSPpath() {
 		HANDLE hFile = CreateFileW(ssp_path_tmp.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if(hFile == INVALID_HANDLE_VALUE)
 			goto serch_in_reg;
-		DWORD dwFileSize = GetFileSize(hFile, NULL);
+		const DWORD dwFileSize = GetFileSize(hFile, NULL);
 		if(dwFileSize == INVALID_FILE_SIZE || !dwFileSize) {
 			CloseHandle(hFile);
 			goto serch_in_reg;
@@ -96,7 +96,7 @@ std::wstring GetSSPpath() {
 				goto serch_in_mui_cache;
 			//szValue like "E:\ssp\ssp.exe" /M "%1"
 			std::wstring sspPath = szValue;
-			auto		 pos	 = sspPath.find_last_of(L"\" /M \"%1\"");
+			const auto	 pos	 = sspPath.find_last_of(L"\" /M \"%1\"");
 			if(pos == std::wstring::npos)
 				goto serch_in_mui_cache;
 			sspPath = sspPath.substr(1, pos - 9);

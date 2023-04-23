@@ -13,20 +13,20 @@ using namespace std;
 #define floop while(1)
 
 
-size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos){
+size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos) noexcept {
 	size_t aret=0;
 	auto i=str.begin()+begin;
-	auto e=str.begin()+(end==wstring::npos?str.size():end);
+	const auto e=str.begin()+(end==wstring::npos?str.size():end);
 	while(i!=e)
 		aret+=max(wcwidth(*(i++)),0);
 	return aret;
 }
 
-void putstr(const wstring&str){
+void putstr(const wstring& str) noexcept {
 	for(auto&c:str)
 		_putwch(c);
 }
-void putchar_x_times(wchar_t the_char,size_t time){
+void putchar_x_times(wchar_t the_char, size_t time) noexcept {
 	while(time--)
 		_putwch(the_char);
 }
@@ -63,13 +63,15 @@ class terminal_runner{
 				if(active_terminal)
 					active_terminal->terminal_exit();
 				break;
+			default:
+				break;
 		}
 		return TRUE;
 	}
 
 	terminal* base;
 public:
-	terminal_runner(terminal*pt):base(pt){}
+	terminal_runner(terminal*pt)noexcept:base(pt){}
 	void run(size_t argc, std::vector<std::wstring>& argv) {
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE);
 		auto old_active_terminal=active_terminal;
@@ -81,11 +83,11 @@ public:
 		const auto hOut=GetStdHandle(STD_OUTPUT_HANDLE);
 		CONSOLE_CURSOR_INFO CurSorInfo;
 		GetConsoleCursorInfo(hOut, &CurSorInfo);
-		auto showCursor = [&]() {
+		auto showCursor = [&]() noexcept {
 			CurSorInfo.bVisible = TRUE;
 			SetConsoleCursorInfo(hOut, &CurSorInfo);
 		};
-		auto hideCursor = [&]() {
+		auto hideCursor = [&]() noexcept {
 			CurSorInfo.bVisible = FALSE;
 			SetConsoleCursorInfo(hOut, &CurSorInfo);
 		};
@@ -100,7 +102,7 @@ public:
 			size_t before_history_index=0;
 			
 			terminal::reprinter_t reprinter;
-			auto move_insert_index=[&](ptrdiff_t move_size){
+			auto move_insert_index=[&](ptrdiff_t move_size)noexcept{
 				COORD move_pos=reprinter.get_cursor_pos();
 				if(move_size>0){
 					if(command.insert_index+move_size>command.command.size()){
@@ -146,7 +148,7 @@ public:
 			};
 			floop{
 				showCursor();
-				auto c=_getwch();
+				const auto c=_getwch();
 				hideCursor();
 				switch(c){
 				case 27://esc
@@ -209,6 +211,8 @@ public:
 						break;
 					case 83://delete
 						reflash_command(command.erase_with_no_move(1));
+						break;
+					default:
 						break;
 					}
 					break;
@@ -318,23 +322,23 @@ inline editting_command_t editting_command_t::erase_with_no_move(size_t erase_si
 	return ret;
 }
 
-inline terminal::reprinter_t::reprinter_t() {
+inline terminal::reprinter_t::reprinter_t() noexcept {
 	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfo(hOut, &BufferInfo);
 	start_pos = BufferInfo.dwCursorPosition;
 	end_pos	  = start_pos;
 }
 
-inline void terminal::reprinter_t::operator()(const std::wstring& str) {
+inline void terminal::reprinter_t::operator()(const std::wstring& str) noexcept {
 	//移动光标到选项开始位置
 	SetConsoleCursorPosition(hOut, start_pos);
 	//输出选项
 	putstr(str);
 	//临时变量保存此时的光标位置
-	auto temp_pos = get_cursor_pos();
+	const auto temp_pos = get_cursor_pos();
 	if(temp_pos.Y < end_pos.Y || (temp_pos.Y == end_pos.Y && temp_pos.X < end_pos.X)) {
 		//如果新的命令比原来的短，那么通过窗口大小和位置，计算出需要几个空格来覆盖原来的命令的尾
-		size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X;
+		const size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X;
 		//输出空格
 		putchar_x_times(' ', space_num);
 	}

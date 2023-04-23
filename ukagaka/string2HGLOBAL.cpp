@@ -5,7 +5,7 @@
 #include "string2HGLOBAL.hpp"
 #include "../codepage.hpp"
 
-HGLOBAL_t string2HGLOBAL(const std::string_view a){
+HGLOBAL_t string2HGLOBAL(const std::string_view a)noexcept{
 	auto s=a.size();
 	HGLOBAL p=GlobalAlloc(GMEM_FIXED,s);
 	if(p)

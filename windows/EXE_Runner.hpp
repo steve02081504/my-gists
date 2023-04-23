@@ -8,7 +8,7 @@ struct EXE_Runner {
 	EXE_Runner(std::wstring path) {
 		_path = path;
 	}
-	~EXE_Runner() = default;
+	virtual ~EXE_Runner() = default;
 	[[nodiscard]] std::wstring GetPath() const { return _path; }
 
 	virtual bool Base_Run(std::wstring args);
@@ -16,7 +16,7 @@ struct EXE_Runner {
 
 private:
 	//operator()
-	std::wstring args_builder() {
+	std::wstring args_builder() noexcept {
 		return {};
 	}
 	std::wstring args_builder(std::wstring arg) {

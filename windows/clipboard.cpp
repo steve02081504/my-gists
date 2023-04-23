@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void setClipboard(const wstring& str) {
+void setClipboard(const wstring& str) noexcept {
 	HGLOBAL hdst;
 	LPWSTR dst;
 	hdst = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, (str.size()+1)*sizeof(WCHAR));
@@ -30,7 +30,7 @@ wstring getClipboard(){
 	if (OpenClipboard(NULL)) {
 		HANDLE hClipboardData = GetClipboardData(CF_UNICODETEXT);
 		if (hClipboardData) {
-			WCHAR *pchData = (WCHAR*)GlobalLock(hClipboardData);
+			const WCHAR *pchData = (WCHAR*)GlobalLock(hClipboardData);
 			if (pchData) {
 				aret = pchData;
 				GlobalUnlock(hClipboardData);

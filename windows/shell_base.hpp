@@ -15,7 +15,7 @@ struct editting_command_t{
 	editting_command_t(std::wstring command,size_t insert_index):command(command),insert_index(insert_index){}
 	editting_command_t(std::wstring command):command(command),insert_index(command.size()){}
 	editting_command_t():command(L""),insert_index(0){}
-	bool empty()const{return command.empty();}
+	bool empty()const noexcept{return command.empty();}
 	editting_command_t&& insert(std::wstring insert_str) &&;
 	editting_command_t	 insert(std::wstring insert_str) const&;
 	editting_command_t&& insert(wchar_t insert_char) &&;
@@ -24,11 +24,11 @@ struct editting_command_t{
 	editting_command_t	 erase(size_t erase_size) const&;
 	editting_command_t&& erase_with_no_move(size_t erase_size) &&;
 	editting_command_t	 erase_with_no_move(size_t erase_size) const&;
-	void clear(){
+	void clear()noexcept{
 		command.clear();
 		insert_index=0;
 	}
-	size_t size()const{return command.size();}
+	size_t size() const noexcept { return command.size(); }
 };
 class terminal{
 private:
@@ -58,26 +58,27 @@ public:
 		HANDLE hOut;
 		COORD start_pos,end_pos;
 	public:
-		reprinter_t();
-		void operator()(const std::wstring& str);
-		void move_to_start(){
+		reprinter_t()noexcept;
+		void operator()(const std::wstring& str)noexcept;
+		void move_to_start()noexcept{
 			SetConsoleCursorPosition(hOut, start_pos);
 		}
-		COORD get_start_pos()const{
+		COORD get_start_pos()const noexcept{
 			return start_pos;
 		}
-		COORD get_end_pos()const{
+		COORD get_end_pos()const noexcept{
 			return end_pos;
 		}
-		COORD get_cursor_pos()const{
+		COORD get_cursor_pos()const noexcept{
 			GetConsoleScreenBufferInfo(hOut, &BufferInfo);
 			return BufferInfo.dwCursorPosition;
 		}
-		auto get_buffer_width()const{
+		auto get_buffer_width()const noexcept{
 			return BufferInfo.dwSize.X;
 		}
 	};
 public:
+	virtual ~terminal() noexcept {}
 	void operator()(size_t argc, std::vector<std::wstring>& argv) {
 		base_main(argc, argv);
 	}

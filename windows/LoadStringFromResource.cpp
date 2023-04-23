@@ -4,10 +4,10 @@
 #if defined(RESOURCE_STRINGS_ARE_NULL_TERMINATED)
 const wchar_t *LoadCStringFromResource(
 	__in UINT		   stringID,
-	__in_opt HINSTANCE instance) {
+	__in_opt HINSTANCE instance) noexcept {
 	WCHAR *pBuf = NULL;
 
-	int len = LoadStringW(
+	const int len = LoadStringW(
 		instance,
 		stringID,
 		reinterpret_cast<LPWSTR>(&pBuf), 0);
@@ -40,10 +40,10 @@ std::wstring LoadStringFromResource(
 
 std::wstring_view LoadStringViewFromResource(
 	__in UINT		   stringID,
-	__in_opt HINSTANCE instance) {
+	__in_opt HINSTANCE instance) noexcept {
 	WCHAR *pBuf = NULL;
 
-	int len = LoadStringW(
+	const int len = LoadStringW(
 		instance,
 		stringID,
 		reinterpret_cast<LPWSTR>(&pBuf), 0);

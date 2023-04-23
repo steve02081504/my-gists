@@ -1,3 +1,3 @@
 #pragma once
 #include <wtypes.h>
-DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds);
+DWORD WaitForSingleObjectWithMessageLoop(HANDLE hHandle, DWORD dwMilliseconds)noexcept;

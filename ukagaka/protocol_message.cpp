@@ -12,7 +12,7 @@ namespace ukagaka{
 		return aret;
 	}
 	std::string to_ansi_colored_string(const base_protocol_message&b){
-		auto charset=b.get_charset_codepage();
+		const auto charset=b.get_charset_codepage();
 		return UnicodeToMultiByte(to_ansi_colored_wstring(b),charset);
 	}
 	std::wstring to_ansi_colored_wstring(const protocol_message&b){
@@ -22,7 +22,7 @@ namespace ukagaka{
 		return aret;
 	}
 	std::string to_ansi_colored_string(const protocol_message&b){
-		auto charset=b.get_charset_codepage();
+		const auto charset=b.get_charset_codepage();
 		return UnicodeToMultiByte(to_ansi_colored_wstring(b),charset);
 	}
 }

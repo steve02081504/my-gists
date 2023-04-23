@@ -9,51 +9,51 @@ inline constexpr endline_t endline{};
 class base_out_t{
 	HANDLE _h;
 public:
-	base_out_t(HANDLE h) : _h(h) {}
+	base_out_t(HANDLE h)noexcept : _h(h) {}
 
-	base_out_t& operator<<(const std::wstring& str) {
+	base_out_t& operator<<(const std::wstring& str) noexcept {
 		DWORD written;
 		WriteConsoleW(_h, str.c_str(), str.size(), &written, nullptr);
 		return *this;
 	}
-	base_out_t& operator<<(const std::string& str) {
+	base_out_t& operator<<(const std::string& str) noexcept {
 		DWORD written;
 		WriteConsoleA(_h, str.c_str(), str.size(), &written, nullptr);
 		return *this;
 	}
-	base_out_t& operator<<(const std::wstring_view& str) {
+	base_out_t& operator<<(const std::wstring_view& str) noexcept {
 		DWORD written;
 		WriteConsoleW(_h, str.data(), str.size(), &written, nullptr);
 		return *this;
 	}
-	base_out_t& operator<<(const std::string_view& str) {
+	base_out_t& operator<<(const std::string_view& str) noexcept {
 		DWORD written;
 		WriteConsoleA(_h, str.data(), str.size(), &written, nullptr);
 		return *this;
 	}
-	base_out_t& operator<<(const wchar_t* str) {
-		std::wstring_view str_view(str);
+	base_out_t& operator<<(const wchar_t* str) noexcept {
+		const std::wstring_view str_view(str);
 		return operator<<(str_view);
 	}
-	base_out_t& operator<<(const char* str) {
-		std::string_view str_view(str);
+	base_out_t& operator<<(const char* str) noexcept {
+		const std::string_view str_view(str);
 		return operator<<(str_view);
 	}
-	base_out_t& operator<<(const wchar_t ch) {
+	base_out_t& operator<<(const wchar_t ch) noexcept {
 		DWORD written;
 		WriteConsoleW(_h, &ch, 1, &written, nullptr);
 		return *this;
 	}
-	base_out_t& operator<<(const char ch) {
+	base_out_t& operator<<(const char ch) noexcept {
 		DWORD written;
 		WriteConsoleA(_h, &ch, 1, &written, nullptr);
 		return *this;
 	}
-	base_out_t& operator<<(const flush_t&) {
+	base_out_t& operator<<(const flush_t&) noexcept {
 		FlushFileBuffers(_h);
 		return *this;
 	}
-	base_out_t& operator<<(const endline_t&) {
+	base_out_t& operator<<(const endline_t&) noexcept {
 		DWORD written;
 		WriteConsoleW(_h, L"\r\n", 2, &written, nullptr);
 		return operator<<(flush);
@@ -62,12 +62,12 @@ public:
 
 class out_t : public base_out_t{
 public:
-	out_t() : base_out_t(GetStdHandle(STD_OUTPUT_HANDLE)) {}
+	out_t()noexcept : base_out_t(GetStdHandle(STD_OUTPUT_HANDLE)) {}
 };
 inline out_t out;
 
 class err_t : public base_out_t{
 public:
-	err_t() : base_out_t(GetStdHandle(STD_ERROR_HANDLE)) {}
+	err_t()noexcept : base_out_t(GetStdHandle(STD_ERROR_HANDLE)) {}
 };
 inline err_t err;
