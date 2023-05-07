@@ -28,3 +28,23 @@
 #define CYAN_OUTPUT(something)		   SET_CYAN << something << RESET_COLOR
 #define GRAY_OUTPUT(something)		   SET_GRAY << something << RESET_COLOR
 #define WHITE_OUTPUT(something)		   SET_WHITE << something << RESET_COLOR
+
+
+#define SET_BOLD		 "\033[1m"
+#define UNSET_BOLD       "\033[22m"
+#define SET_UNDERLINE	 "\033[4m"
+#define UNSET_UNDERLINE  "\033[24m"
+#define SET_BLINK		 "\033[5m"
+#define UNSER_BLINK		 "\033[25m"
+#define SET_REVERSE		 "\033[7m"
+#define UNSET_REVERSE	 "\033[27m"
+
+#define BOLD_TEXT(text)			SET_BOLD text UNSET_BOLD
+#define UNDERLINE_TEXT(text)	SET_UNDERLINE text UNSET_UNDERLINE
+#define BLINK_TEXT(text)		SET_BLINK text UNSER_BLINK
+#define REVERSE_TEXT(text)		SET_REVERSE text UNSET_REVERSE
+
+#define BOLD_OUTPUT(something)		SET_BOLD << something << UNSET_BOLD
+#define UNDERLINE_OUTPUT(something) SET_UNDERLINE << something << UNSET_UNDERLINE
+#define BLINK_OUTPUT(something)		SET_BLINK << something << UNSER_BLINK
+#define REVERSE_OUTPUT(something)	SET_REVERSE << something << UNSET_REVERSE

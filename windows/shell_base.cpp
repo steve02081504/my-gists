@@ -32,7 +32,7 @@ void putchar_x_times(wchar_t the_char, size_t time) noexcept {
 }
 
 class terminal_runner{
-	inline static terminal* active_terminal=nullptr;
+	inline static vector<terminal*> active_terminals;
 
 	struct edit_history_t{
 		vector<editting_command_t> commands{{L"",0}};
@@ -60,8 +60,10 @@ class terminal_runner{
 	static BOOL WINAPI ConsoleHandler(DWORD CEvent){
 		switch(CEvent){
 			case CTRL_CLOSE_EVENT:
-				if(active_terminal)
-					active_terminal->terminal_exit();
+				while (active_terminals.size()) {
+					active_terminals.back()->terminal_exit();
+					active_terminals.pop_back();
+				}
 				break;
 			default:
 				break;
@@ -74,8 +76,7 @@ public:
 	terminal_runner(terminal*pt)noexcept:base(pt){}
 	void run(size_t argc, std::vector<std::wstring>& argv) {
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE);
-		auto old_active_terminal=active_terminal;
-		active_terminal=base;
+		active_terminals.push_back(base);
 		base->before_terminal_login();
 		base->terminal_args(argc, argv);
 		base->terminal_login();
@@ -240,7 +241,7 @@ public:
 	end:
 		showCursor();
 		base->terminal_exit();
-		active_terminal=old_active_terminal;
+		active_terminals.pop_back();
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,FALSE);
 	}
 };
