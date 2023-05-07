@@ -15,7 +15,7 @@ namespace Socket_link_n{
 			if (WSAStartup(MAKEWORD(2, 1), &wsaData) != 0)
 				throw (std::runtime_error)std::to_string(WSAGetLastError());
 		}
-		void uninit(){
+		void uninit()noexcept{
 			if(inited)
 				WSACleanup();
 			inited = 0;
@@ -57,7 +57,7 @@ namespace Socket_link_n{
 			init_socket();
 			link();
 		}
-		Socket_link_t(SOCKET clientSocket){
+		Socket_link_t(SOCKET clientSocket)noexcept{
 			_clientSocket = clientSocket;
 			_srvAddr={};
 		}
@@ -65,11 +65,11 @@ namespace Socket_link_n{
 			//清理
 			closesocket(_clientSocket);
 		}
-		void base_send(const void*data,size_t size){
+		void base_send(const void*data,size_t size)noexcept{
 			//发送消息
 			::send(_clientSocket, (const char*)data,size,0);
 		}
-		void base_send(std::string massage){
+		void base_send(const std::string& massage) noexcept {
 			//发送消息
 			base_send(massage.c_str(),massage.size());
 		}
@@ -78,12 +78,12 @@ namespace Socket_link_n{
 			std::string massage;
 			char recvBuf[513];
 			while(1){
-				auto a= ::recv(_clientSocket, recvBuf, 512, 0);
+				const auto a= ::recv(_clientSocket, recvBuf, 512, 0);
 				if (a == EAGAIN || a == 0 || a==-1)
 					break;
 				else{
 					recvBuf[512]=0;
-					massage += std::string{recvBuf,(unsigned)a};
+					massage += std::string_view{recvBuf,(unsigned)a};
 				}
 			}
 			return massage;
@@ -116,7 +116,7 @@ namespace Socket_link_n{
 			//等待连接
 			SOCKADDR_IN clientAddr;
 			int len = sizeof(SOCKADDR);
-			SOCKET connSocket = accept(_serverSocket, (SOCKADDR*)&clientAddr, &len);
+			const SOCKET connSocket = accept(_serverSocket, (SOCKADDR*)&clientAddr, &len);
 			if (connSocket == INVALID_SOCKET)
 				throw (std::runtime_error)"accept(_serverSocket, (SOCKADDR*)&clientAddr, &len) execute failed!";
 			return connSocket;

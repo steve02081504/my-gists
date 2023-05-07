@@ -2,12 +2,12 @@
 #include "../windows/WaitForXObjectWithMessageLoop.cpp"
 #include "EXE_Runner.hpp"
 
-bool EXE_Runner::Base_Run(std::wstring args){
+bool EXE_Runner::Base_Run(const std::wstring& args) noexcept {
 	if((INT_PTR)ShellExecuteW(NULL, L"open", _path.c_str(), args.c_str(), NULL, SW_SHOW) <= 32)
 		return false;
 	return true;
 }
-bool EXE_Runner::Base_RunAndWait(std::wstring args) {
+bool EXE_Runner::Base_RunAndWait(const std::wstring& args) {
 	//Execute the program and wait for it to finish
 	STARTUPINFOW		si;
 	PROCESS_INFORMATION pi;

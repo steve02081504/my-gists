@@ -1,6 +1,6 @@
 #include <windows.h>
 
-bool IsElevated_helper(){
+bool IsElevated_helper()noexcept{
 	bool aret=0;
 	HANDLE hToken = NULL;
 	if(OpenProcessToken(GetCurrentProcess(),TOKEN_QUERY,&hToken)){
@@ -13,7 +13,7 @@ bool IsElevated_helper(){
 		CloseHandle(hToken);
 	return aret;
 }
-bool IsElevated(){
+bool IsElevated()noexcept{
 	static bool aret = IsElevated_helper();
 	return aret;
 }

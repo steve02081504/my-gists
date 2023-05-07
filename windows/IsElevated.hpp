@@ -1,1 +1,1 @@
-bool IsElevated();
+bool IsElevated()noexcept;

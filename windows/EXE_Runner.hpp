@@ -5,31 +5,31 @@
 struct EXE_Runner {
 	std::wstring _path;
 
-	EXE_Runner(std::wstring path) {
+	EXE_Runner(const std::wstring& path) {
 		_path = path;
 	}
 	virtual ~EXE_Runner() = default;
 	[[nodiscard]] std::wstring GetPath() const { return _path; }
 
-	virtual bool Base_Run(std::wstring args);
-	virtual bool Base_RunAndWait(std::wstring args);
+	virtual bool Base_Run(const std::wstring& args) noexcept;
+	virtual bool Base_RunAndWait(const std::wstring& args);
 
 private:
 	//operator()
 	std::wstring args_builder() noexcept {
 		return {};
 	}
-	std::wstring args_builder(std::wstring arg) {
+	std::wstring args_builder(const std::wstring&arg) {
 		return CMDargsConverter(arg);
 	}
 	template<typename... Args>
-	std::wstring args_builder(std::wstring arg, Args&&... args) {
+	std::wstring args_builder(const std::wstring&arg, Args&&... args) {
 		return CMDargsConverter(arg) + L' ' + args_builder(args...);
 	}
 
 public:
 	template<typename... Args>
-	bool operator()(Args&&... args) {
+	bool operator()(Args&&... args) noexcept {
 		return Base_Run(args_builder(args...));
 	}
 	template<typename... Args>

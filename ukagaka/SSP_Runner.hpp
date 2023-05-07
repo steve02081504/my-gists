@@ -5,7 +5,7 @@
 struct SSP_Runner:EXE_Runner {
 	bool		 _installed;
 
-	SSP_Runner(std::wstring SSPpath = {}):
+	SSP_Runner(const std::wstring& SSPpath = {}):
 		EXE_Runner(SSPpath) {
 		_installed = IsSSPinstalled(SSPpath);
 	}
@@ -16,30 +16,30 @@ struct SSP_Runner:EXE_Runner {
 		return _installed;
 	}
 	
-	void reset_path(std::wstring SSPpath = GetSSPpath()) {
+	void reset_path(const std::wstring& SSPpath = GetSSPpath()) {
 		_path = SSPpath;
 		_installed = IsSSPinstalled(SSPpath);
 	}
 	
-	virtual bool Base_Run(std::wstring args) override final;
-	virtual bool Base_RunAndWait(std::wstring args) override final;
+	virtual bool Base_Run(const std::wstring& args) noexcept override final;
+	virtual bool Base_RunAndWait(const std::wstring& args) override final;
 	//operator()
 	using EXE_Runner::operator();
 	#define self (*this)
-	bool run_ghost(std::wstring name) {
+	bool run_ghost(const std::wstring& name) noexcept {
 		return self(L"/G", name);
 	}
 	template<typename... Args>
-	bool install_nar(std::wstring file_path, Args&&... args) {
+	bool install_nar(const std::wstring& file_path, Args&&... args) noexcept {
 		return self(L"/I", file_path, std::forward<Args>(args)...);
 	}
-	bool install_ssf(std::wstring file_path) {
+	bool install_ssf(const std::wstring& file_path) noexcept {
 		return self(L"/S", file_path);
 	}
-	bool send_x_ukaboot_ssp(std::wstring info) {
+	bool send_x_ukaboot_ssp(const std::wstring& info) noexcept {
 		return self(L"/N", info);
 	}
-	bool send_x_ukagaka_link(std::wstring info) {
+	bool send_x_ukagaka_link(const std::wstring& info) noexcept {
 		return self(L"/M", info);
 	}
 	#undef self
