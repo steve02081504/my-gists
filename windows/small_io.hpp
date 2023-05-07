@@ -71,3 +71,9 @@ public:
 	err_t()noexcept : base_out_t(GetStdHandle(STD_ERROR_HANDLE)) {}
 };
 inline err_t err;
+
+class nullstream_t: public base_out_t{
+public:
+	nullstream_t()noexcept : base_out_t(INVALID_HANDLE_VALUE) {}
+};
+inline nullstream_t nullstream;
