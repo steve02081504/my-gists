@@ -29,7 +29,7 @@ private:
 
 public:
 	template<typename... Args>
-	bool operator()(Args&&... args) noexcept {
+	bool operator()(Args&&... args) {
 		return Base_Run(args_builder(args...));
 	}
 	template<typename... Args>
