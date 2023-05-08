@@ -55,7 +55,7 @@ public:
 	}
 	base_out_t& operator<<(const endline_t&) noexcept {
 		DWORD written;
-		WriteConsoleW(_h, L"\r\n", 2, &written, nullptr);
+		WriteConsoleW(_h, L"\n", 1, &written, nullptr);
 		return operator<<(flush);
 	}
 };
