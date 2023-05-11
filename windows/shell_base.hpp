@@ -49,6 +49,7 @@ protected:
 	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)=0;
 	virtual std::wstring terminal_get_command_history(size_t before_num)=0;
 	virtual constexpr bool enable_virtual_terminal_processing(){return true;}
+	virtual constexpr bool terminal_command_history_next(size_t&index){return false;}
 private:
 	void base_main(size_t argc, std::vector<std::wstring>&argv);
 public:
@@ -115,11 +116,18 @@ protected:
 		command_history.push_back({});
 	}
 	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)override{
-		command_history[command_history.size() - before_num - 1] = command;
+		if(before_num==0)
+			command_history[command_history.size() - before_num - 1] = command;
 	}
 	virtual std::wstring terminal_get_command_history(size_t before_num)override{
 		if(before_num>=command_history.size())
 			return{};
 		return command_history[command_history.size()-before_num-1];
+	}
+	virtual constexpr bool terminal_command_history_next(size_t& index)override {
+		if(index==command_history.size()-1)
+			return false;
+		index++;
+		return true;
 	}
 };

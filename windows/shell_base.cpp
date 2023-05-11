@@ -125,7 +125,7 @@ public:
 						command.insert_index=0;
 					}
 					else{
-						auto tmp=move_pos.X-GetStrWide(command.command,command.insert_index+move_size,command.insert_index);
+						ptrdiff_t tmp=int(move_pos.X)-GetStrWide(command.command,command.insert_index+move_size,command.insert_index);
 						while(tmp<0){
 							tmp+=reprinter.get_buffer_width();
 							move_pos.Y--;
@@ -190,8 +190,8 @@ public:
 					switch(_getwch()){
 					case 72://up
 						base->terminal_command_history_update(command.command, before_history_index);
-						before_history_index++;
-						reflash_command(base->terminal_get_command_history(before_history_index));
+						if(base->terminal_command_history_next(before_history_index))
+							reflash_command(base->terminal_get_command_history(before_history_index));
 						break;
 					case 80://down
 						if(before_history_index) {
