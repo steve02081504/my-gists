@@ -16,11 +16,11 @@ using namespace std;
 
 size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos) noexcept {
 	size_t aret=0;
-	auto i=str.begin()+begin;
-	const auto e=str.begin()+(end==wstring::npos?str.size():end);
-	while(i!=e)
-		aret+=CharWidthMap[*(i++)];
-	return aret;
+	wstring_view strv(str);
+	if(end==wstring::npos)
+		end=strv.size();
+	strv=strv.substr(begin,end-begin);
+	return CharWidthMap[strv];
 }
 
 class line_break_virtual_spaces_calculator {//用于处理换行时的虚拟空格
