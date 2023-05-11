@@ -4,32 +4,75 @@
 #define NOMINMAX
 #include <windows.h>
 
-#include "../cpp/wcwidth.cpp"//wcwidth
+#include "CharWidthMap.hpp"
+#include "small_io.hpp"//small_io
 #include "clipboard.cpp"//setClipboard、getClipboard
 #include "shell_base.hpp"
+#include <conio.h>
 
 using namespace std;
 
 #define floop while(1)
-
 
 size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos) noexcept {
 	size_t aret=0;
 	auto i=str.begin()+begin;
 	const auto e=str.begin()+(end==wstring::npos?str.size():end);
 	while(i!=e)
-		aret+=max(wcwidth(*(i++)),0);
+		aret+=CharWidthMap[*(i++)];
 	return aret;
 }
 
-void putstr(const wstring& str) noexcept {
-	for(auto&c:str)
-		_putwch(c);
-}
-void putchar_x_times(wchar_t the_char, size_t time) noexcept {
-	while(time--)
-		_putwch(the_char);
-}
+class line_break_virtual_spaces_calculator {//用于处理换行时的虚拟空格
+	vector<size_t> _virtual_spaces_poses;
+	SHORT _buffer_width;
+public:
+	line_break_virtual_spaces_calculator()noexcept:_buffer_width(0){}
+	line_break_virtual_spaces_calculator(const wstring&command,SHORT buffer_width,SHORT start_pos)noexcept{
+		_buffer_width = buffer_width;
+		//虚拟空格的产生是因为行末所剩余的空间不足以容纳下一个字符，所以需要在行末补充空格
+		//以_virtual_spaces_poses记录每个虚拟空格的位置
+		SHORT pos=start_pos;
+		size_t str_pos = 0;
+		for(auto&c:command){
+			const auto w=CharWidthMap[c];
+			if(w){
+				if(pos+w>buffer_width)
+					_virtual_spaces_poses.push_back(str_pos);
+				pos+=w;
+				if(pos>=buffer_width)
+					pos-=buffer_width;
+			}
+			str_pos++;
+		}
+	}
+	//获取在pos处有了多少个虚拟空格
+	size_t get_virtual_spaces_count(size_t pos)noexcept{
+		//获取_virtual_spaces_poses中小于pos的元素个数
+		//我们已知_virtual_spaces_poses是有序的，所以可以使用二分查找
+		size_t left=0,right=_virtual_spaces_poses.size();
+		while(left<right){
+			const size_t mid=(left+right)/2;
+			if(_virtual_spaces_poses[mid]<pos)
+				left=mid+1;
+			else
+				right=mid;
+		}
+		return left;
+	}
+	//获取在两个pos之间有多少个虚拟空格
+	size_t get_virtual_spaces_count(size_t pos1, size_t pos2)noexcept{
+		if(pos1==pos2)
+			return 0;
+		return get_virtual_spaces_count(pos2)-get_virtual_spaces_count(pos1);
+	}
+	//更新终端宽度
+	void update_buffer_width(SHORT buffer_width,SHORT start_pos,const wstring&command)noexcept{
+		if(_buffer_width==buffer_width)
+			return;
+		*this=line_break_virtual_spaces_calculator(command,buffer_width,start_pos);
+	}
+};
 
 class terminal_runner{
 	inline static vector<terminal*> active_terminals;
@@ -94,7 +137,7 @@ public:
 		};
 
 		floop{
-			putstr(L">> ");
+			out << L">> ";
 
 			base->terminal_command_history_new();
 			edit_history_t edit_history;
@@ -103,7 +146,10 @@ public:
 			size_t before_history_index=0;
 			
 			terminal::reprinter_t reprinter;
+			line_break_virtual_spaces_calculator virtual_spaces_calculator;
 			auto move_insert_index=[&](ptrdiff_t move_size)noexcept{
+				//更新终端宽度
+				virtual_spaces_calculator.update_buffer_width(reprinter.get_buffer_width(),reprinter.get_start_pos().X,command.command);
 				COORD move_pos=reprinter.get_cursor_pos();
 				if(move_size>0){
 					if(command.insert_index+move_size>command.command.size()){
@@ -111,7 +157,9 @@ public:
 						command.insert_index=command.command.size();
 					}
 					else{
-						auto tmp=move_pos.X+GetStrWide(command.command,command.insert_index,command.insert_index+move_size);
+						auto tmp=move_pos.X
+								 +GetStrWide(command.command,command.insert_index,command.insert_index+move_size)
+								 +virtual_spaces_calculator.get_virtual_spaces_count(command.insert_index,command.insert_index+move_size);
 						while(tmp >= (USHORT)reprinter.get_buffer_width()) {
 							tmp -= reprinter.get_buffer_width();
 							move_pos.Y++;
@@ -125,7 +173,9 @@ public:
 						command.insert_index=0;
 					}
 					else{
-						ptrdiff_t tmp=int(move_pos.X)-GetStrWide(command.command,command.insert_index+move_size,command.insert_index);
+						ptrdiff_t tmp=int(move_pos.X)
+									  -GetStrWide(command.command,command.insert_index+move_size,command.insert_index)
+									  -virtual_spaces_calculator.get_virtual_spaces_count(command.insert_index+move_size,command.insert_index);
 						while(tmp<0){
 							tmp+=reprinter.get_buffer_width();
 							move_pos.Y--;
@@ -144,6 +194,8 @@ public:
 				//更新变量
 				command=new_command;
 				command.insert_index=0;//现在光标在命令的最前面
+				//重新计算虚拟空格
+				virtual_spaces_calculator=line_break_virtual_spaces_calculator(new_command.command,reprinter.get_buffer_width(),reprinter.get_start_pos().X);
 				//移动光标到正确的位置
 				move_insert_index(new_command.insert_index);
 			};
@@ -222,7 +274,7 @@ public:
 					reflash_command(command.erase(1));
 					break;
 				default:
-					if(wcwidth(c)<1)
+					if(CharWidthMap[c]==0 || c==9)//tab或者其他乱七八糟
 						break;
 					reflash_command(command.insert(c));
 					break;
@@ -271,13 +323,13 @@ void terminal::terminal_exit() {
 	}
 }
 
-inline editting_command_t&& editting_command_t::insert(std::wstring insert_str) && {
+inline editting_command_t&& editting_command_t::insert(const std::wstring&insert_str) && {
 	command.insert(insert_index, insert_str);
 	insert_index += insert_str.size();
 	return std::move(*this);
 }
 
-inline editting_command_t editting_command_t::insert(std::wstring insert_str) const& {
+inline editting_command_t editting_command_t::insert(const std::wstring&insert_str) const& {
 	auto ret = *this;
 	std::move(ret).insert(insert_str);
 	return ret;
@@ -334,14 +386,15 @@ inline void terminal::reprinter_t::operator()(const std::wstring& str) noexcept 
 	//移动光标到选项开始位置
 	SetConsoleCursorPosition(hOut, start_pos);
 	//输出选项
-	putstr(str);
+	out << str;
 	//临时变量保存此时的光标位置
 	const auto temp_pos = get_cursor_pos();
-	if(temp_pos.Y < end_pos.Y || (temp_pos.Y == end_pos.Y && temp_pos.X < end_pos.X)) {
-		//如果新的命令比原来的短，那么通过窗口大小和位置，计算出需要几个空格来覆盖原来的命令的尾
-		const size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X;
+	if(temp_pos.Y < end_pos.Y || (temp_pos.Y == end_pos.Y && temp_pos.X <= end_pos.X)) {
+		//通过窗口大小和位置，计算出需要几个空格来覆盖原来的命令的尾
+		//当光标在行尾或下行行首时，光标会莫名其妙位置一致，我们需要+1来保证完全覆写
+		const size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X + 1;
 		//输出空格
-		putchar_x_times(' ', space_num);
+		out << X_times(space_num, L' ');
 	}
 	//更新结束位置
 	end_pos = temp_pos;

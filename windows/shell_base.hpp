@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-#define NO_MIN_MAX
+#define NOMINMAX
 #if defined(_WINSOCKAPI_)
 	#include <windows.h>
 #else
@@ -12,12 +12,12 @@
 struct editting_command_t{
 	std::wstring command;
 	size_t insert_index;
-	editting_command_t(std::wstring command,size_t insert_index):command(command),insert_index(insert_index){}
-	editting_command_t(std::wstring command):command(command),insert_index(command.size()){}
-	editting_command_t():command(L""),insert_index(0){}
+	editting_command_t(const std::wstring& command,size_t insert_index):command(command),insert_index(insert_index){}
+	editting_command_t(const std::wstring& command):command(command),insert_index(command.size()){}
+	editting_command_t():command(),insert_index(0){}
 	bool empty()const noexcept{return command.empty();}
-	editting_command_t&& insert(std::wstring insert_str) &&;
-	editting_command_t	 insert(std::wstring insert_str) const&;
+	editting_command_t&& insert(const std::wstring& insert_str) &&;
+	editting_command_t	 insert(const std::wstring& insert_str) const&;
 	editting_command_t&& insert(wchar_t insert_char) &&;
 	editting_command_t	 insert(wchar_t insert_char) const&;
 	editting_command_t&& erase(size_t erase_size) &&;
@@ -61,6 +61,9 @@ public:
 	public:
 		reprinter_t()noexcept;
 		void operator()(const std::wstring& str)noexcept;
+		void update_infos()const noexcept{
+			GetConsoleScreenBufferInfo(hOut, &BufferInfo);
+		}
 		void move_to_start()noexcept{
 			SetConsoleCursorPosition(hOut, start_pos);
 		}
@@ -71,8 +74,7 @@ public:
 			return end_pos;
 		}
 		COORD get_cursor_pos()const noexcept{
-			GetConsoleScreenBufferInfo(hOut, &BufferInfo);
-			return BufferInfo.dwCursorPosition;
+			return update_infos(),BufferInfo.dwCursorPosition;
 		}
 		auto get_buffer_width()const noexcept{
 			return BufferInfo.dwSize.X;

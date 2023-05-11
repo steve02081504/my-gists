@@ -1,10 +1,23 @@
+#pragma once
+#define NOMINMAX
 #include <windows.h>
+
 #include <string>
+#include <algorithm>
 
 class flush_t{};
 inline constexpr flush_t flush{};
 class endline_t{};
 inline constexpr endline_t endline{};
+template<class char_T>
+struct X_times_output_t{
+	size_t _times;
+	char_T _ch;
+};
+template<class char_T>
+inline X_times_output_t<char_T> X_times(const size_t times, const char_T ch)noexcept{
+	return X_times_output_t<char_T>{times, ch};
+}
 
 class base_out_t{
 	HANDLE _h;
@@ -29,6 +42,29 @@ public:
 	base_out_t& operator<<(const std::string_view& str) noexcept {
 		DWORD written;
 		WriteConsoleA(_h, str.data(), str.size(), &written, nullptr);
+		return *this;
+	}
+	static constexpr size_t tmp_buf_size = 512;
+	base_out_t& operator<<(const X_times_output_t<wchar_t>& x) noexcept {
+		wchar_t buf[tmp_buf_size];
+		std::fill_n(buf, std::min(x._times, tmp_buf_size), x._ch);
+		DWORD written;
+		size_t times = x._times;
+		while(times > 0){
+			WriteConsoleW(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
+			times -= written;
+		}
+		return *this;
+	}
+	base_out_t& operator<<(const X_times_output_t<char>& x) noexcept {
+		char buf[tmp_buf_size];
+		std::fill_n(buf, std::min(x._times, tmp_buf_size), x._ch);
+		DWORD written;
+		size_t times = x._times;
+		while(times > 0){
+			WriteConsoleA(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
+			times -= written;
+		}
 		return *this;
 	}
 	base_out_t& operator<<(const wchar_t* str) noexcept {
