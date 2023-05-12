@@ -45,7 +45,7 @@ protected:
 	virtual bool terminal_run(const std::wstring&command)=0;
 	virtual void terminal_exit();
 	virtual std::wstring terminal_command_update(std::wstring command){return command;}
-	virtual std::wstring terminal_command_prefix(){using namespace std::literals;return L">> "s;}
+	virtual std::wstring terminal_command_prompt(){using namespace std::literals;return L">> "s;}
 	virtual void terminal_command_history_new()=0;
 	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)=0;
 	virtual std::wstring terminal_get_command_history(size_t before_num)=0;
@@ -136,7 +136,7 @@ protected:
 			return{};
 		return command_history[command_history.size()-before_num-1];
 	}
-	virtual bool terminal_command_history_next(size_t& index)noexcept override{
+	virtual bool terminal_command_history_next(size_t& index)override{
 		if(index==command_history.size()-1)
 			return false;
 		index++;

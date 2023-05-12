@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #include "CharWidthMap.hpp"
+#include "../STL/replace_all.hpp"
 #include "small_io.hpp"//small_io
 #include "clipboard.cpp"//setClipboard、getClipboard
 #include "shell_base.hpp"
@@ -22,8 +23,8 @@ bool operator==(const COORD&l,const COORD&r)noexcept{
 class command_pos_recorder{
 	vector<COORD> _poses;
 	
-	wstring _command_prefix;
-	COORD _prefix_pos={0,0};
+	wstring _command_prompt;
+	COORD _prompt_pos={0,0};
 	wstring _command;
 	SHORT _width;
 	void new_pos(COORD pos){
@@ -35,7 +36,7 @@ class command_pos_recorder{
 			start_pos = _poses[start];
 			_poses.resize(start);
 		}else{
-			start_pos = _prefix_pos;
+			start_pos = _prompt_pos;
 			_poses.clear();
 		}
 		new_pos(start_pos);
@@ -55,7 +56,7 @@ public:
 	void update_buffer_width(SHORT width)noexcept{
 		if(_width!=width){
 			_width=width;
-			_prefix_pos=CharWidthMap.GetPosAfterStr(_command_prefix,width);
+			_prompt_pos=CharWidthMap.GetPosAfterStr(_command_prompt,width);
 			rebuild_poses();
 		}
 	}
@@ -65,39 +66,39 @@ public:
 	COORD get_pos_of(size_t index,COORD base_pos)noexcept{
 		const auto pos=get_pos_of(index);
 		return {
-			base_pos.X+pos.X-_prefix_pos.X,
-			base_pos.Y+pos.Y-_prefix_pos.Y
+			base_pos.X+pos.X-_prompt_pos.X,
+			base_pos.Y+pos.Y-_prompt_pos.Y
 		};
 	}
 	COORD get_base_pos_from(size_t index_now,COORD pos_now)noexcept{
 		const auto pos=get_pos_of(index_now);
 		return {
-			pos_now.X-pos.X+_prefix_pos.X,
-			pos_now.Y-pos.Y+_prefix_pos.Y
+			pos_now.X-pos.X+_prompt_pos.X,
+			pos_now.Y-pos.Y+_prompt_pos.Y
 		};
 	}
 	COORD get_end_pos_from(COORD base_pos)noexcept{
 		const auto pos=_poses.back();
 		return {
-			base_pos.X+pos.X-_prefix_pos.X,
-			base_pos.Y+pos.Y-_prefix_pos.Y
+			base_pos.X+pos.X-_prompt_pos.X,
+			base_pos.Y+pos.Y-_prompt_pos.Y
 		};
 	}
-	void set_command_prefix(const wstring&prefix)noexcept{
-		if(_command_prefix!=prefix){
-			_command_prefix=prefix;
-			const auto new_pos=CharWidthMap.GetPosAfterStr(prefix,_width);
-			if(_prefix_pos!=new_pos){
-				_prefix_pos=new_pos;
+	void set_command_prompt(const wstring&prompt)noexcept{
+		if(_command_prompt!=prompt){
+			_command_prompt=prompt;
+			const auto new_pos=CharWidthMap.GetPosAfterStr(prompt,_width);
+			if(_prompt_pos!=new_pos){
+				_prompt_pos=new_pos;
 				rebuild_poses();
 			}
 		}
 	}
 	void set_command(const wstring&command)noexcept{
 		//找出相同的前缀
-		const size_t same_prefix = std::ranges::mismatch(_command, command).in1 - _command.begin();
+		const size_t same_prompt = std::ranges::mismatch(_command, command).in1 - _command.begin();
 		_command=command;
-		rebuild_poses(same_prefix);
+		rebuild_poses(same_prompt);
 	}
 };
 class command_reprinter{
@@ -112,8 +113,8 @@ class command_reprinter{
 		reprinter.set_end_pos(pos_recorder.get_end_pos_from(reprinter.get_start_pos()));
 	}
 public:
-	void set_command_prefix(const wstring&prefix)noexcept{
-		pos_recorder.set_command_prefix(prefix);
+	void set_command_prompt(const wstring&prompt)noexcept{
+		pos_recorder.set_command_prompt(prompt);
 	}
 	void move_curour(size_t index_now,ptrdiff_t move)noexcept{
 		update_infos(index_now);
@@ -190,10 +191,11 @@ public:
 			CurSorInfo.bVisible = FALSE;
 			SetConsoleCursorInfo(hOut, &CurSorInfo);
 		};
+		wstring muti_line_command;
 
 		floop{
-			wstring command_prefix=base->terminal_command_prefix();
-			out << command_prefix;
+			wstring command_prompt=base->terminal_command_prompt();
+			out << command_prompt;
 
 			base->terminal_command_history_new();
 			edit_history_t edit_history;
@@ -202,7 +204,7 @@ public:
 			size_t before_history_index=0;
 			
 			command_reprinter reprinter;
-			reprinter.set_command_prefix(command_prefix);
+			reprinter.set_command_prompt(command_prompt);
 
 			auto move_insert_index=[&](ptrdiff_t move_size)noexcept{
 				reprinter.move_curour(command.insert_index,move_size);
@@ -213,6 +215,24 @@ public:
 				auto command_for_show=base->terminal_command_update(new_command.command);
 				reprinter.update_command(command,new_command,command_for_show);
 			};
+			if(muti_line_command.size()){
+				const auto line_break_pos=muti_line_command.find(L'\n');
+				if(line_break_pos!=wstring::npos){
+					command.command=muti_line_command.substr(0,line_break_pos);
+					muti_line_command.erase(0,line_break_pos+1);
+					command.insert_index=line_break_pos;
+					reflash_command(command);
+					
+					_putwch('\n');
+					goto run_command;
+				}
+				else{
+					command.command=muti_line_command;
+					command.insert_index=muti_line_command.size();
+					muti_line_command.clear();
+					reflash_command(command);
+				}
+			}
 			floop{
 				showCursor();
 				const auto c=_getwch();
@@ -244,7 +264,18 @@ public:
 				case 22:{//ctrl-v
 					auto insert_text=getClipboard();
 					auto new_command=command.insert(insert_text);
+					replace_all(new_command.command,L"\r\n"sv,L"\n"sv);
+					replace_all(new_command.command,L"\r"sv,L"\n"sv);
+					auto line_break=new_command.command.find(L'\n');
+					if(line_break!=wstring::npos){
+						muti_line_command=new_command.command.substr(line_break+1);
+						new_command.command=new_command.command.substr(0,line_break);
+					}
 					reflash_command(new_command);
+					if(muti_line_command.size()){
+						_putwch('\n');
+						goto run_command;
+					}
 					break;
 				}
 				case 9:{//tab
