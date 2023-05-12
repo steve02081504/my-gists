@@ -45,11 +45,12 @@ protected:
 	virtual bool terminal_run(const std::wstring&command)=0;
 	virtual void terminal_exit();
 	virtual std::wstring terminal_command_update(std::wstring command){return command;}
+	virtual std::wstring terminal_command_prefix(){using namespace std::literals;return L">> "s;}
 	virtual void terminal_command_history_new()=0;
 	virtual void terminal_command_history_update(const std::wstring&command,size_t before_num)=0;
 	virtual std::wstring terminal_get_command_history(size_t before_num)=0;
 	virtual constexpr bool enable_virtual_terminal_processing(){return true;}
-	virtual constexpr bool terminal_command_history_next(size_t&index){return false;}
+	virtual bool terminal_command_history_next(size_t&index){return false;}
 private:
 	void base_main(size_t argc, std::vector<std::wstring>&argv);
 public:
@@ -64,8 +65,17 @@ public:
 		void update_infos()const noexcept{
 			GetConsoleScreenBufferInfo(hOut, &BufferInfo);
 		}
+		void move_to(COORD pos)noexcept{
+			SetConsoleCursorPosition(hOut, pos);
+		}
 		void move_to_start()noexcept{
-			SetConsoleCursorPosition(hOut, start_pos);
+			move_to(start_pos);
+		}
+		void set_start_pos(COORD pos)noexcept{
+			start_pos=pos;
+		}
+		void set_end_pos(COORD pos)noexcept{
+			end_pos=pos;
 		}
 		COORD get_start_pos()const noexcept{
 			return start_pos;
@@ -126,7 +136,7 @@ protected:
 			return{};
 		return command_history[command_history.size()-before_num-1];
 	}
-	virtual constexpr bool terminal_command_history_next(size_t& index)override {
+	virtual bool terminal_command_history_next(size_t& index)noexcept override{
 		if(index==command_history.size()-1)
 			return false;
 		index++;

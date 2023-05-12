@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <ranges>
 
 #define NOMINMAX
 #include <windows.h>
@@ -14,63 +15,117 @@ using namespace std;
 
 #define floop while(1)
 
-size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos) noexcept {
-	size_t aret=0;
-	wstring_view strv(str);
-	if(end==wstring::npos)
-		end=strv.size();
-	strv=strv.substr(begin,end-begin);
-	return CharWidthMap[strv];
+bool operator==(const COORD&l,const COORD&r)noexcept{
+	return l.X==r.X&&l.Y==r.Y;
 }
 
-class line_break_virtual_spaces_calculator {//用于处理换行时的虚拟空格
-	vector<size_t> _virtual_spaces_poses;
-	SHORT _buffer_width;
+class command_pos_recorder{
+	vector<COORD> _poses;
+	
+	wstring _command_prefix;
+	COORD _prefix_pos={0,0};
+	wstring _command;
+	SHORT _width;
+	void new_pos(COORD pos){
+		_poses.push_back(pos);
+	}
+	void rebuild_poses(size_t start=0)noexcept{
+		COORD start_pos;
+		if(start){
+			start_pos = _poses[start];
+			_poses.resize(start);
+		}else{
+			start_pos = _prefix_pos;
+			_poses.clear();
+		}
+		new_pos(start_pos);
+		CharWidthMap.GetPosesOfStr(wstring_view(_command).substr(start), _width, start_pos,
+									[this](COORD pos) {
+										new_pos(pos);
+									});
+	}
 public:
-	line_break_virtual_spaces_calculator()noexcept:_buffer_width(0){}
-	line_break_virtual_spaces_calculator(const wstring&command,SHORT buffer_width,SHORT start_pos)noexcept{
-		_buffer_width = buffer_width;
-		//虚拟空格的产生是因为行末所剩余的空间不足以容纳下一个字符，所以需要在行末补充空格
-		//以_virtual_spaces_poses记录每个虚拟空格的位置
-		SHORT pos=start_pos;
-		size_t str_pos = 0;
-		for(auto&c:command){
-			const auto w=CharWidthMap[c];
-			if(w){
-				if(pos+w>buffer_width)
-					_virtual_spaces_poses.push_back(str_pos);
-				pos+=w;
-				if(pos>=buffer_width)
-					pos-=buffer_width;
+	command_pos_recorder()noexcept{
+		auto hOut=GetStdHandle(STD_OUTPUT_HANDLE);
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		GetConsoleScreenBufferInfo(hOut,&csbi);
+		_width=csbi.dwSize.X;
+		rebuild_poses();
+	}
+	void update_buffer_width(SHORT width)noexcept{
+		if(_width!=width){
+			_width=width;
+			_prefix_pos=CharWidthMap.GetPosAfterStr(_command_prefix,width);
+			rebuild_poses();
+		}
+	}
+	COORD get_pos_of(size_t index)noexcept{
+		return _poses[index];
+	}
+	COORD get_pos_of(size_t index,COORD base_pos)noexcept{
+		const auto pos=get_pos_of(index);
+		return {
+			base_pos.X+pos.X-_prefix_pos.X,
+			base_pos.Y+pos.Y-_prefix_pos.Y
+		};
+	}
+	COORD get_base_pos_from(size_t index_now,COORD pos_now)noexcept{
+		const auto pos=get_pos_of(index_now);
+		return {
+			pos_now.X-pos.X+_prefix_pos.X,
+			pos_now.Y-pos.Y+_prefix_pos.Y
+		};
+	}
+	COORD get_end_pos_from(COORD base_pos)noexcept{
+		const auto pos=_poses.back();
+		return {
+			base_pos.X+pos.X-_prefix_pos.X,
+			base_pos.Y+pos.Y-_prefix_pos.Y
+		};
+	}
+	void set_command_prefix(const wstring&prefix)noexcept{
+		if(_command_prefix!=prefix){
+			_command_prefix=prefix;
+			const auto new_pos=CharWidthMap.GetPosAfterStr(prefix,_width);
+			if(_prefix_pos!=new_pos){
+				_prefix_pos=new_pos;
+				rebuild_poses();
 			}
-			str_pos++;
 		}
 	}
-	//获取在pos处有了多少个虚拟空格
-	size_t get_virtual_spaces_count(size_t pos)noexcept{
-		//获取_virtual_spaces_poses中小于pos的元素个数
-		//我们已知_virtual_spaces_poses是有序的，所以可以使用二分查找
-		size_t left=0,right=_virtual_spaces_poses.size();
-		while(left<right){
-			const size_t mid=(left+right)/2;
-			if(_virtual_spaces_poses[mid]<pos)
-				left=mid+1;
-			else
-				right=mid;
-		}
-		return left;
+	void set_command(const wstring&command)noexcept{
+		//找出相同的前缀
+		const size_t same_prefix = std::ranges::mismatch(_command, command).in1 - _command.begin();
+		_command=command;
+		rebuild_poses(same_prefix);
 	}
-	//获取在两个pos之间有多少个虚拟空格
-	size_t get_virtual_spaces_count(size_t pos1, size_t pos2)noexcept{
-		if(pos1==pos2)
-			return 0;
-		return get_virtual_spaces_count(pos2)-get_virtual_spaces_count(pos1);
+};
+class command_reprinter{
+	terminal::reprinter_t reprinter;
+	command_pos_recorder pos_recorder;
+	void update_infos(size_t index_now)noexcept{
+		const COORD pos_now=reprinter.get_cursor_pos();
+		//更新终端宽度
+		pos_recorder.update_buffer_width(reprinter.get_buffer_width());
+		//更新终端起始点和终点
+		reprinter.set_start_pos(pos_recorder.get_base_pos_from(index_now,pos_now));
+		reprinter.set_end_pos(pos_recorder.get_end_pos_from(reprinter.get_start_pos()));
 	}
-	//更新终端宽度
-	void update_buffer_width(SHORT buffer_width,SHORT start_pos,const wstring&command)noexcept{
-		if(_buffer_width==buffer_width)
-			return;
-		*this=line_break_virtual_spaces_calculator(command,buffer_width,start_pos);
+public:
+	void set_command_prefix(const wstring&prefix)noexcept{
+		pos_recorder.set_command_prefix(prefix);
+	}
+	void move_curour(size_t index_now,ptrdiff_t move)noexcept{
+		update_infos(index_now);
+		reprinter.move_to(pos_recorder.get_pos_of(index_now+move,reprinter.get_start_pos()));
+	}
+	void update_command(editting_command_t&command,const editting_command_t&new_command,const wstring&command_for_print)noexcept{
+		const auto index_now = command.insert_index;
+		update_infos(index_now);
+		pos_recorder.set_command(new_command.command);
+		reprinter(command_for_print);
+		reprinter.move_to(pos_recorder.get_pos_of(new_command.insert_index,reprinter.get_start_pos()));
+		command=new_command;
 	}
 };
 
@@ -137,7 +192,8 @@ public:
 		};
 
 		floop{
-			out << L">> ";
+			wstring command_prefix=base->terminal_command_prefix();
+			out << command_prefix;
 
 			base->terminal_command_history_new();
 			edit_history_t edit_history;
@@ -145,59 +201,17 @@ public:
 			size_t tab_num=0;
 			size_t before_history_index=0;
 			
-			terminal::reprinter_t reprinter;
-			line_break_virtual_spaces_calculator virtual_spaces_calculator;
+			command_reprinter reprinter;
+			reprinter.set_command_prefix(command_prefix);
+
 			auto move_insert_index=[&](ptrdiff_t move_size)noexcept{
-				//更新终端宽度
-				virtual_spaces_calculator.update_buffer_width(reprinter.get_buffer_width(),reprinter.get_start_pos().X,command.command);
-				COORD move_pos=reprinter.get_cursor_pos();
-				if(move_size>0){
-					if(command.insert_index+move_size>command.command.size()){
-						move_pos=reprinter.get_end_pos();
-						command.insert_index=command.command.size();
-					}
-					else{
-						auto tmp=move_pos.X
-								 +GetStrWide(command.command,command.insert_index,command.insert_index+move_size)
-								 +virtual_spaces_calculator.get_virtual_spaces_count(command.insert_index,command.insert_index+move_size);
-						while(tmp >= (USHORT)reprinter.get_buffer_width()) {
-							tmp -= reprinter.get_buffer_width();
-							move_pos.Y++;
-						}
-						move_pos.X=(SHORT)tmp;
-						command.insert_index+=move_size;
-					}
-				}else{
-					if(command.insert_index+move_size<0){
-						move_pos=reprinter.get_start_pos();
-						command.insert_index=0;
-					}
-					else{
-						ptrdiff_t tmp=int(move_pos.X)
-									  -GetStrWide(command.command,command.insert_index+move_size,command.insert_index)
-									  -virtual_spaces_calculator.get_virtual_spaces_count(command.insert_index+move_size,command.insert_index);
-						while(tmp<0){
-							tmp+=reprinter.get_buffer_width();
-							move_pos.Y--;
-						}
-						move_pos.X=(SHORT)tmp;
-						command.insert_index+=move_size;
-					}
-				}
-				SetConsoleCursorPosition(hOut,move_pos);
+				reprinter.move_curour(command.insert_index,move_size);
+				command.insert_index += move_size;
 			};
-			auto reflash_command=[&](editting_command_t new_command){
+			auto reflash_command=[&](const editting_command_t&new_command){
 				//重绘新的命令
-				reprinter(base->terminal_command_update(new_command.command));
-				//移动到命令开始的位置
-				reprinter.move_to_start();
-				//更新变量
-				command=new_command;
-				command.insert_index=0;//现在光标在命令的最前面
-				//重新计算虚拟空格
-				virtual_spaces_calculator=line_break_virtual_spaces_calculator(new_command.command,reprinter.get_buffer_width(),reprinter.get_start_pos().X);
-				//移动光标到正确的位置
-				move_insert_index(new_command.insert_index);
+				auto command_for_show=base->terminal_command_update(new_command.command);
+				reprinter.update_command(command,new_command,command_for_show);
 			};
 			floop{
 				showCursor();
@@ -391,8 +405,7 @@ inline void terminal::reprinter_t::operator()(const std::wstring& str) noexcept 
 	const auto temp_pos = get_cursor_pos();
 	if(temp_pos.Y < end_pos.Y || (temp_pos.Y == end_pos.Y && temp_pos.X <= end_pos.X)) {
 		//通过窗口大小和位置，计算出需要几个空格来覆盖原来的命令的尾
-		//当光标在行尾或下行行首时，光标会莫名其妙位置一致，我们需要+1来保证完全覆写
-		const size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X + 1;
+		const size_t space_num = (end_pos.Y - temp_pos.Y) * BufferInfo.dwSize.X + end_pos.X - temp_pos.X;
 		//输出空格
 		out << X_times(space_num, L' ');
 	}

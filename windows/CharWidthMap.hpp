@@ -20,8 +20,8 @@ public:
 		GetConsoleScreenBufferInfo(_h, &info);
 		size_t left = 0, right = info.dwSize.Y;
 		while(left < right){
-			size_t mid = (left + right) / 2;
-			COORD size = {info.dwSize.X, (SHORT)mid};
+			const size_t mid = (left + right) / 2;
+			const COORD	 size = {info.dwSize.X, (SHORT)mid};
 			if(SetConsoleScreenBufferSize(_h, size)){//设置成功
 				if(mid == right)
 					break;
@@ -32,8 +32,8 @@ public:
 		GetConsoleScreenBufferInfo(_h, &info);
 		left = 0, right = -1;
 		while(left < right){
-			size_t mid = (left + right) / 2;
-			COORD size = {(SHORT)mid, info.dwSize.Y};
+			const size_t mid	 = (left + right) / 2;
+			const COORD	 size = {(SHORT)mid, info.dwSize.Y};
 			if(SetConsoleScreenBufferSize(_h, size)){//设置成功
 				if(mid == left)
 					break;
@@ -46,7 +46,7 @@ public:
 		CloseHandle(_h);
 	}
 	uint8_t operator[](const wchar_t ch)noexcept{
-		auto it = _map.find(ch);
+		const auto it = _map.find(ch);
 		if(it != _map.end())
 			return it->second;
 		//获取字符宽度
@@ -76,15 +76,46 @@ public:
 		SetConsoleCursorPosition(_h, {0, 0});
 		if(info.dwCursorPosition.Y){
 			//二分法处理
-			size_t split = str.size() / 2;
-			std::wstring_view left = str.substr(0, split);
-			std::wstring_view right = str.substr(split);
+			const size_t split = str.size() / 2;
+			const std::wstring_view left = str.substr(0, split);
+			const std::wstring_view	right = str.substr(split);
 			return (*this)[left] + (*this)[right];
 		}
 		return (size_t)info.dwCursorPosition.X;
 	}
 	size_t operator[](const wchar_t* str)noexcept{
 		return (*this)[std::wstring_view(str)];
+	}
+	COORD GetPosesOfStr(std::wstring_view str, SHORT width, COORD base_pos, auto for_each_pos) noexcept {
+		auto&pos=base_pos;
+		//计算最后一行的位置
+		for(auto ch: str) {
+			if(ch == '\n') {
+				pos.X = 0;
+				pos.Y++;
+			}
+			else if(ch == '\t') {
+				SetConsoleCursorPosition(_h, {pos.X, 0});
+				CONSOLE_SCREEN_BUFFER_INFO info;
+				WriteConsoleW(_h, L"\t", 1, nullptr, nullptr);
+				GetConsoleScreenBufferInfo(_h, &info);
+				pos.X = info.dwCursorPosition.X;
+			}
+			else {
+				const auto ch_width = (*this)[ch];
+				if(pos.X + ch_width >= width) {
+					pos.X = pos.X + ch_width == width ? 0 : ch_width;
+					pos.Y++;
+				}
+				else
+					pos.X += ch_width;
+			}
+			for_each_pos(pos);
+		}
+		return pos;
+	}
+	[[nodiscard]]COORD GetPosAfterStr(std::wstring_view str, SHORT width, COORD base_pos = {0, 0}) noexcept {
+		return GetPosesOfStr(str, width, base_pos, [](auto) noexcept {});
 	}
 };
 inline CharWidthMap_t CharWidthMap;
