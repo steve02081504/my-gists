@@ -12,16 +12,22 @@ namespace SSTP_link_n{
 	#endif		 // !DONT_USE_SOCKET
 	struct SSTP_link_args_t: base_protocol_message {
 		using base_protocol_message::base_protocol_message;
-		bool has(std::wstring a){return base_protocol_message::has(L"X-SSTP-PassThru-"+a);}
+		bool has(std::wstring a)const{return base_protocol_message::has(L"X-SSTP-PassThru-"+a);}
 		auto&operator[](std::wstring a){return base_protocol_message::operator[](L"X-SSTP-PassThru-"+a);}
 		auto& base_arec(std::wstring a){return base_protocol_message::operator[](a);}
+
+		const auto& operator[](std::wstring a) const { return base_protocol_message::operator[](L"X-SSTP-PassThru-" + a); }
+		const auto& base_arec(std::wstring a) const { return base_protocol_message::operator[](a); }
 	};
 
 	struct SSTP_ret_t: protocol_message {
 		using protocol_message::protocol_message;
-		bool  has(std::wstring a) { return base_protocol_message::has(L"X-SSTP-PassThru-" + a); }
+		bool  has(std::wstring a) const { return base_protocol_message::has(L"X-SSTP-PassThru-" + a); }
 		auto& operator[](std::wstring a) { return base_protocol_message::operator[](L"X-SSTP-PassThru-" + a); }
 		auto& base_arec(std::wstring a) { return base_protocol_message::operator[](a); }
+
+		const auto& operator[](std::wstring a) const { return base_protocol_message::operator[](L"X-SSTP-PassThru-" + a); }
+		const auto& base_arec(std::wstring a) const { return base_protocol_message::operator[](a); }
 	};
 
 	#define dwDataOfDirectSSTP 9801
