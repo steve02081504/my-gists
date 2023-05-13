@@ -128,7 +128,6 @@ namespace SSTP_link_n{
 					return {};
 				else
 					Sleep(250);
-				sec= time(0);
 			}
 		}
 		void before_SSTP_send() noexcept {
