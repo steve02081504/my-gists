@@ -142,8 +142,8 @@ namespace ukagaka {
 			using namespace CODEPAGE_n;
 			return UnicodeToMultiByte((std::wstring)*this, get_charset_codepage());
 		}
-		auto get_head(){return _head;}
-		auto get_code(){
+		auto get_head()const{return _head;}
+		auto get_code()const{
 			//将head按空格分割，取第2个
 			auto head = _head;
 			auto code_flag = head.find(L" ");

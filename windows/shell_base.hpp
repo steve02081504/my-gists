@@ -102,21 +102,21 @@ namespace terminal_n{
 			return _poses[index];
 		}
 		COORD get_pos_of(size_t index,COORD base_pos)noexcept{
-			const auto pos=get_pos_of(index);
+			const auto&pos=get_pos_of(index);
 			return {
 				base_pos.X+pos.X-_prompt_pos.X,
 				base_pos.Y+pos.Y-_prompt_pos.Y
 			};
 		}
 		COORD get_base_pos_from(size_t index_now,COORD pos_now)noexcept{
-			const auto pos=get_pos_of(index_now);
+			const auto&pos=get_pos_of(index_now);
 			return {
 				pos_now.X-pos.X+_prompt_pos.X,
 				pos_now.Y-pos.Y+_prompt_pos.Y
 			};
 		}
 		COORD get_end_pos_from(COORD base_pos)noexcept{
-			const auto pos=_poses.back();
+			const auto&pos=_poses.back();
 			return {
 				base_pos.X+pos.X-_prompt_pos.X,
 				base_pos.Y+pos.Y-_prompt_pos.Y
@@ -199,7 +199,7 @@ namespace terminal_n{
 		}
 		void operator()(size_t argc, wchar_t** argv) {
 			vector<wstring> argv_t(argc);
-			auto					  tmp = argc;
+			auto			tmp = argc;
 			while(tmp--)
 				argv_t[tmp] = argv[tmp];
 			operator()(argc, argv_t);
