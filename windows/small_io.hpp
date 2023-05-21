@@ -276,6 +276,7 @@ public:
 		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE)
 			exit(1);//TODO
 		# endif
+		if(ch=='\x1a' || !read) _is_eof=1;
 		return *this;
 	}
 	base_in_t& operator>>(char& ch) noexcept {
