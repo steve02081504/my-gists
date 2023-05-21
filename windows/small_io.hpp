@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include <windows.h>
+#include "../codepage.hpp"
 
 #include <string>
 #include <algorithm>
@@ -19,41 +20,115 @@ inline X_times_output_t<char_T> X_times(const size_t times, const char_T ch)noex
 	return X_times_output_t<char_T>{times, ch};
 }
 
+#if !defined(SMALLIO_DISABLE_OUTPUT)
 class base_out_t{
 	HANDLE _h;
+	# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		DWORD  _type = GetFileType(_h);
+	# endif
 public:
 	base_out_t(HANDLE h)noexcept : _h(h) {}
+	~base_out_t()noexcept {
+		if(_h!=INVALID_HANDLE_VALUE)CloseHandle(_h);
+	}
 
 	base_out_t& operator<<(const std::wstring& str) noexcept {
 		DWORD written;
-		WriteConsoleW(_h, str.c_str(), str.size(), &written, nullptr);
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+			WriteConsoleW(_h, str.c_str(), str.size(), &written, nullptr);
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+		{
+			const auto muti_str=CODEPAGE_n::UnicodeToMultiByte(str, CODEPAGE_n::CP_UTF8);
+			WriteFile(_h, muti_str.c_str(), muti_str.size(), &written, nullptr);
+		}
+		# endif
 		return *this;
 	}
 	base_out_t& operator<<(const std::string& str) noexcept {
 		DWORD written;
-		WriteConsoleA(_h, str.c_str(), str.size(), &written, nullptr);
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+			WriteConsoleA(_h, str.c_str(), str.size(), &written, nullptr);
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+			WriteFile(_h, str.c_str(), str.size(), &written, nullptr);
+		# endif
 		return *this;
 	}
 	base_out_t& operator<<(const std::wstring_view& str) noexcept {
 		DWORD written;
-		WriteConsoleW(_h, str.data(), str.size(), &written, nullptr);
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+			WriteConsoleW(_h, str.data(), str.size(), &written, nullptr);
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+		{
+			const auto muti_str=CODEPAGE_n::UnicodeToMultiByte(str, CODEPAGE_n::CP_UTF8);
+			WriteFile(_h, muti_str.c_str(), muti_str.size(), &written, nullptr);
+		}
+		# endif
 		return *this;
 	}
 	base_out_t& operator<<(const std::string_view& str) noexcept {
 		DWORD written;
-		WriteConsoleA(_h, str.data(), str.size(), &written, nullptr);
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+			WriteConsoleA(_h, str.data(), str.size(), &written, nullptr);
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+			WriteFile(_h, str.data(), str.size(), &written, nullptr);
+		# endif
 		return *this;
 	}
 	static constexpr size_t tmp_buf_size = 512;
 	base_out_t& operator<<(const X_times_output_t<wchar_t>& x) noexcept {
-		wchar_t buf[tmp_buf_size];
-		std::fill_n(buf, std::min(x._times, tmp_buf_size), x._ch);
-		DWORD written;
-		size_t times = x._times;
-		while(times > 0){
-			WriteConsoleW(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
-			times -= written;
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+		{
+			wchar_t buf[tmp_buf_size];
+			std::fill_n(buf, std::min(x._times, tmp_buf_size), x._ch);
+			DWORD written;
+			size_t times = x._times;
+			while(times > 0){
+				WriteConsoleW(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
+				times -= written;
+			}
 		}
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+		{
+			std::wstring buf;
+			buf.resize(x._times, x._ch);
+			operator<<(buf);
+		}
+		# endif
 		return *this;
 	}
 	base_out_t& operator<<(const X_times_output_t<char>& x) noexcept {
@@ -62,7 +137,18 @@ public:
 		DWORD written;
 		size_t times = x._times;
 		while(times > 0){
-			WriteConsoleA(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
+			# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+			if(is_console())
+			# endif
+			# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+				WriteConsoleA(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
+			# endif
+			# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+			else
+			# endif
+			# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+				WriteFile(_h, buf, std::min(times, tmp_buf_size), &written, nullptr);
+			# endif
 			times -= written;
 		}
 		return *this;
@@ -77,12 +163,37 @@ public:
 	}
 	base_out_t& operator<<(const wchar_t ch) noexcept {
 		DWORD written;
-		WriteConsoleW(_h, &ch, 1, &written, nullptr);
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+			WriteConsoleW(_h, &ch, 1, &written, nullptr);
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+		{
+			const auto muti_str=CODEPAGE_n::UnicodeToMultiByte(std::wstring_view(&ch, 1), CODEPAGE_n::CP_UTF8);
+			WriteFile(_h, muti_str.c_str(), muti_str.size(), &written, nullptr);
+		}
+		# endif
 		return *this;
 	}
 	base_out_t& operator<<(const char ch) noexcept {
 		DWORD written;
-		WriteConsoleA(_h, &ch, 1, &written, nullptr);
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_FILE)
+			WriteConsoleA(_h, &ch, 1, &written, nullptr);
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+			WriteFile(_h, &ch, 1, &written, nullptr);
+		# endif
 		return *this;
 	}
 	base_out_t& operator<<(const flush_t&) noexcept {
@@ -90,10 +201,33 @@ public:
 		return *this;
 	}
 	base_out_t& operator<<(const endline_t&) noexcept {
-		DWORD written;
-		WriteConsoleW(_h, L"\n", 1, &written, nullptr);
+		constexpr std::wstring_view endline_str = L"\n";
+		operator<<(endline_str);
 		return operator<<(flush);
 	}
+	[[nodiscard]] bool is_file() const noexcept {
+		# if defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+		return false;
+		# elif defined(SMALLIO_OUT_ALWAYS_FILE)
+		return true;
+		# else
+		return _type == FILE_TYPE_DISK;
+		# endif
+	}
+	[[nodiscard]] bool is_console() const noexcept {
+		# if defined(SMALLIO_OUT_ALWAYS_CONSOLE)
+		return true;
+		# elif defined(SMALLIO_OUT_ALWAYS_FILE)
+		return false;
+		# else
+		return _type == FILE_TYPE_CHAR;
+		# endif
+	}
+	#if !defined(SMALLIO_OUT_ALWAYS_CONSOLE) && !defined(SMALLIO_OUT_ALWAYS_FILE)
+	[[nodiscard]] bool is_pipe() const noexcept {
+		return _type == FILE_TYPE_PIPE;
+	}
+	#endif
 };
 
 class out_t : public base_out_t{
@@ -113,23 +247,52 @@ public:
 	nullstream_t()noexcept : base_out_t(INVALID_HANDLE_VALUE) {}
 };
 inline nullstream_t nullstream;
+#endif
 
+#if !defined(SMALLIO_DISABLE_INPUT)
 class base_in_t{
 	HANDLE _h;
-	bool _is_eof=0;
+	bool   _is_eof = 0, _tmp_err = 0;
+	#if !defined(SMALLIO_IN_ALWAYS_CONSOLE) && !defined(SMALLIO_IN_ALWAYS_FILE)
+	DWORD _type=GetFileType(_h);
+	#endif
 public:
 	base_in_t(HANDLE h)noexcept : _h(h) {}
+	~base_in_t() {
+		if(_h != INVALID_HANDLE_VALUE) CloseHandle(_h);
+	}
 
 	base_in_t& operator>>(wchar_t& ch) noexcept {
 		DWORD read;
-		ReadConsoleW(_h, &ch, 1, &read, nullptr);
-		if(ch==L'\x1a') _is_eof=1;
+		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE) && !defined(SMALLIO_IN_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_IN_ALWAYS_FILE)
+			ReadConsoleW(_h, &ch, 1, &read, nullptr);
+		# endif
+		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE) && !defined(SMALLIO_IN_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE)
+			exit(1);//TODO
+		# endif
 		return *this;
 	}
 	base_in_t& operator>>(char& ch) noexcept {
 		DWORD read;
-		ReadConsoleA(_h, &ch, 1, &read, nullptr);
-		if(ch=='\x1a') _is_eof=1;
+		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE) && !defined(SMALLIO_IN_ALWAYS_FILE)
+		if(is_console())
+		# endif
+		# if !defined(SMALLIO_IN_ALWAYS_FILE)
+			ReadConsoleA(_h, &ch, 1, &read, nullptr);
+		# endif
+		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE) && !defined(SMALLIO_IN_ALWAYS_FILE)
+		else
+		# endif
+		# if !defined(SMALLIO_IN_ALWAYS_CONSOLE)
+			_tmp_err=!ReadFile(_h, &ch, 1, &read, nullptr);
+		# endif
+		if(ch=='\x1a' || !read) _is_eof=1;
 		return *this;
 	}
 	friend base_in_t& getline(base_in_t& in, std::wstring& str) noexcept {
@@ -155,25 +318,19 @@ public:
 	[[nodiscard]] explicit operator bool() const noexcept {
 		if(is_null()) return false;
 		if(_is_eof) return false;
-		if(is_file()){
-			//check if the file is at the end
-			LARGE_INTEGER pos;
-			GetFileSizeEx(_h, &pos);
-			return pos.QuadPart != SetFilePointerEx(_h, {0, 0}, &pos, FILE_CURRENT);
-		}
 		return true;
 	}
 	[[nodiscard]] bool eof() const noexcept {
 		return !operator bool();
 	}
 	[[nodiscard]] bool is_file() const noexcept {
-		return GetFileType(_h) == FILE_TYPE_DISK;
+		return _type == FILE_TYPE_DISK;
 	}
 	[[nodiscard]] bool is_console() const noexcept {
-		return GetFileType(_h) == FILE_TYPE_CHAR;
+		return _type == FILE_TYPE_CHAR;
 	}
 	[[nodiscard]] bool is_pipe() const noexcept {
-		return GetFileType(_h) == FILE_TYPE_PIPE;
+		return _type == FILE_TYPE_PIPE;
 	}
 	[[nodiscard]] bool is_null() const noexcept {
 		return _h == INVALID_HANDLE_VALUE || !_h;
@@ -185,3 +342,4 @@ public:
 	in_t()noexcept : base_in_t(GetStdHandle(STD_INPUT_HANDLE)) {}
 };
 inline in_t in;
+#endif
