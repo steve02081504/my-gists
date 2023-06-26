@@ -47,7 +47,7 @@ namespace Socket_link_n{
 			
 			_srvAddr.sin_addr.S_un.S_addr = inet_addr(addr.c_str());
 			_srvAddr.sin_family = AF_INET;
-			_srvAddr.sin_port = htons(port);
+			_srvAddr.sin_port = htons((u_short)port);
 		}
 		Socket_link_t(std::string addr, unsigned int port) :Socket_link_t(addr, port, not_link) {
 			link();
@@ -102,7 +102,7 @@ namespace Socket_link_n{
 			//初始化服务器地址族变量
 			_srvAddr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 			_srvAddr.sin_family = AF_INET;
-			_srvAddr.sin_port = htons(port);
+			_srvAddr.sin_port = htons((u_short)port);
 
 			//绑定
 			if (bind(_serverSocket, (SOCKADDR*)&_srvAddr, sizeof(SOCKADDR)) == SOCKET_ERROR)
