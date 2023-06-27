@@ -30,7 +30,7 @@ public:
 				left = mid + 1;
 		}
 		GetConsoleScreenBufferInfo(_h, &info);
-		left = 0, right = -1;
+		left = 0, right = SIZE_MAX;
 		while(left < right){
 			const size_t mid	 = (left + right) / 2;
 			const COORD	 size = {(SHORT)mid, info.dwSize.Y};

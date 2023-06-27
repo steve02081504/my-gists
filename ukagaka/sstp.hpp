@@ -116,7 +116,7 @@ namespace SSTP_link_n{
 			if(!toghost || !replay_to)
 				return {};
 			MSG msg;
-			time_t sec=time(0);
+			const time_t sec=time(0);
 			while(1) {
 				if(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&msg);

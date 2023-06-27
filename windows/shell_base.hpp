@@ -9,6 +9,11 @@
 	#undef _WINSOCKAPI_
 #endif
 
+#if defined(_MSC_VER)
+	#pragma warning(push)
+	#pragma warning(disable : 4100)
+	#pragma warning(disable : 26440)
+#endif
 namespace terminal_n {
 	using namespace std;
 	WCHAR peek_key_input() noexcept;
@@ -281,3 +286,6 @@ namespace terminal_n {
 		}
 	};
 }		// namespace terminal_n
+#if defined(_MSC_VER)
+	#pragma warning(pop)
+#endif
