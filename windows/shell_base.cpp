@@ -43,13 +43,28 @@ namespace terminal_n {
 	void							  update_csbi() noexcept {
 		 GetConsoleScreenBufferInfo(hOut, &csbi);
 	}
+	COORD get_window_size_with_old_info() noexcept {
+		return csbi.dwSize;
+	}
 	COORD get_window_size() noexcept {
 		update_csbi();
 		return csbi.dwSize;
 	}
+	COORD get_cursor_pos_with_old_info() noexcept {
+		return csbi.dwCursorPosition;
+	}
 	COORD get_cursor_pos() noexcept {
 		update_csbi();
 		return csbi.dwCursorPosition;
+	}
+	SHORT get_buffer_height_with_old_info() noexcept {
+		return get_window_size_with_old_info().Y;
+	}
+	SHORT get_buffer_width_with_old_info() noexcept {
+		return get_window_size_with_old_info().X;
+	}
+	SHORT get_buffer_height() noexcept {
+		return get_window_size().Y;
 	}
 	SHORT get_buffer_width() noexcept {
 		return get_window_size().X;
@@ -185,8 +200,8 @@ namespace terminal_n {
 					case WINDOW_BUFFER_SIZE_EVENT:
 						//一个神秘的windows bug：对虚拟的屏幕缓冲区调用SetConsoleScreenBufferSize也会触发这个事件
 						//这导致这个事件所提供的窗口信息不总是和真实的窗口信息一致
-						//所以这里我们不使用这个事件提供的窗口信息，而是直接调用get_window_size
-						reprinter.window_resize(get_window_size(), command.insert_index);
+						//所以这里我们不使用这个事件提供的窗口信息
+						reprinter.window_resize(command.insert_index);
 						[[fallthrough]];
 					default:
 						//ignore
@@ -574,7 +589,7 @@ namespace terminal_n {
 								   });
 	}
 	inline pos_recorder_t::pos_recorder_t() noexcept {
-		_width = get_window_size().X;
+		_width = get_buffer_width();
 		rebuild_poses();
 	}
 	inline void pos_recorder_t::update_buffer_width(SHORT width) noexcept {

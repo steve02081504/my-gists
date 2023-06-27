@@ -12,8 +12,13 @@
 namespace terminal_n {
 	using namespace std;
 	WCHAR peek_key_input() noexcept;
+	COORD get_window_size_with_old_info() noexcept;
 	COORD get_window_size() noexcept;
+	COORD get_cursor_pos_with_old_info() noexcept;
 	COORD get_cursor_pos() noexcept;
+	SHORT get_buffer_height_with_old_info() noexcept;
+	SHORT get_buffer_width_with_old_info() noexcept;
+	SHORT get_buffer_height() noexcept;
 	SHORT get_buffer_width() noexcept;
 	struct editting_command_t {
 		wstring command;
@@ -146,13 +151,12 @@ namespace terminal_n {
 			move_curour_to(index_now + move);
 		}
 		void update_content(const editting_command_t& new_command, const wstring& command_for_print) noexcept {
-			const auto old_content = pos_recorder.get_content();
 			pos_recorder.set_content(new_command.command);
 			reprinter(command_for_print);
 
 			//考虑到输出可能导致屏幕滚动，所以需要重新设定起始点和终点的Y轴偏差值
-			const auto cursor_pos = get_cursor_pos();
-			if(get_window_size().Y - 1 == cursor_pos.Y) {
+			const auto cursor_pos = get_cursor_pos_with_old_info();//base_reprinter_t::operator()会更新info，所以这里可以适当优化
+			if(get_buffer_height_with_old_info() - 1 == cursor_pos.Y) {
 				const auto	assume_end_pos = pos_recorder.get_end_pos_from(reprinter.get_start_pos());
 				const short Y_diff		   = cursor_pos.Y - assume_end_pos.Y;
 				reprinter.get_start_pos().Y += Y_diff;
@@ -169,9 +173,17 @@ namespace terminal_n {
 			reprinter.set_start_pos(pos_recorder.get_base_pos_from(index_now, pos_now));
 			reprinter.set_end_pos(pos_recorder.get_end_pos_from(reprinter.get_start_pos()));
 		}
+		void window_resize(size_t index_now) noexcept {
+			const COORD pos_now = get_cursor_pos();
+			//更新终端宽度
+			pos_recorder.update_buffer_width(get_buffer_width_with_old_info());
+			//更新终端起始点和终点
+			reprinter.set_start_pos(pos_recorder.get_base_pos_from(index_now, pos_now));
+			reprinter.set_end_pos(pos_recorder.get_end_pos_from(reprinter.get_start_pos()));
+		}
 		void operator()(const wstring& str) noexcept {
 			//简单调用需要考虑窗口大小变化的情况
-			window_resize(get_window_size(), pos_recorder.get_content().size());	   //简单调用总假设光标在最后
+			window_resize(pos_recorder.get_content().size());	   //简单调用总假设光标在最后
 			pos_recorder.set_content(str);
 			reprinter(str);
 		}
