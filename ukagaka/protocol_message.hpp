@@ -29,6 +29,13 @@ namespace ukagaka {
 			return empty;
 		}
 	public:
+		bool has(std::wstring a)const{ 
+			for (auto& x : _params)
+				if (x.name == a)
+					return true;
+			return false;
+		}
+	public:
 		base_protocol_message() = default;
 		base_protocol_message(std::initializer_list<param_t> a) {
 			_params = a;
@@ -84,7 +91,6 @@ namespace ukagaka {
 		auto var(){return arec(L"Script");}
 		auto&get_params()noexcept{return _params;}
 		const auto&get_params()const noexcept{return _params;}
-		bool has(std::wstring a)const{return arec(a).size();}
 		auto&operator[](std::wstring a){return arec(a);}
 		const auto&operator[](std::wstring a)const{return arec(a);}
 		auto erase(std::wstring a)noexcept{
